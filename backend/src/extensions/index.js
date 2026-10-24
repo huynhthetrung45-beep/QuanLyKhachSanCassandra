@@ -20,6 +20,7 @@ const socialx = require('./social-extras.service');
 const notifyx = require('./notify-extras.service');
 const metrics = require('./metrics');
 const routes = require('./routes');
+const workRoutes = require('./work-routes');
 
 // Bang cua migration 009-012: backend tu choi khoi dong neu thieu (giong bang cu).
 const REQUIRED_TABLES = [
@@ -31,10 +32,15 @@ const REQUIRED_TABLES = [
     'notification_settings_by_user', 'push_subscriptions_by_user', 'task_reminders_by_day',
     'reports', 'reports_by_status', 'report_keys', 'moderation_log', 'moderation_state',
     // migration 013
-    'story_reactions', 'story_styles', 'ai_chat_by_user'
+    'story_reactions', 'story_styles', 'ai_chat_by_user',
+    // migration 014-015: cong viec, lich, nhac nho, hop truc tuyen
+    'tasks', 'tasks_by_user', 'tasks_by_group', 'task_comments_by_task', 'task_history_by_task', 'calendar_events', 'events_by_user_day',
+    'events_by_group_day', 'schedule_locks', 'idempotency_keys', 'reminders', 'reminders_by_user', 'reminders_by_target', 'reminders_due',
+    'notification_refs', 'meetings', 'meetings_by_user', 'meetings_by_group', 'meeting_invitations', 'meeting_links', 'meeting_participation'
 ];
 
 function installHooks() {
+    require('./storage-hooks').installStorageHooks();
     notifyx.installNotificationHooks();
     profile.installPresencePersistence();
 }
@@ -93,7 +99,15 @@ const resetLimiter = rateLimit({
     message: 'Có quá nhiều lần thử đặt lại mật khẩu. Vui lòng thử lại sau.'
 });
 
+const passwordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, max: Number(process.env.ACCOUNT_RATE_LIMIT || 20), key: req => req.user.userId,
+    message: 'Bạn thao tác quá nhiều lần, hãy thử lại sau ít phút.'
+});
+
 function mountPublic(app) {
+    // Doi mat khau theo duong dan trong SRS (muc 6.3); giong POST /me/password.
+    app.post('/api/v1/auth/password/change', requireAuth, rejectSpoofedIdentity, security.guard(), passwordLimiter, async (req, res) =>
+        res.json(await security.changePassword(req.user, req.sessionHash, req.body || {})));
     app.post('/api/v1/auth/password/forgot', forgotLimiter, async (req, res) => res.json(await security.requestPasswordReset(req.body || {})));
     app.post('/api/v1/auth/password/reset', resetLimiter, async (req, res) => res.json(await security.resetPassword(req.body || {})));
     app.post('/api/v1/auth/2fa/verify', requireAuth, async (req, res) =>
@@ -139,7 +153,11 @@ function mountAuthed(app) {
     app.get(['/api/v1/me/profile', '/api/v1/users/:userId/profile'],
         decorateJson(async body => (body.userId ? { ...body, ...(await profile.coverInfo(body.userId)) } : body)));
 
+    // Thong bao: gan doi tuong lien quan (cong viec / cuoc hop) de mo dung man hinh.
+    app.get('/api/v1/notifications', decorateJson(notifyx.decorateNotifications));
+
     app.use('/api/v1', routes);
+    app.use('/api/v1', workRoutes);
 }
 
 let backgroundStarted = false;
@@ -147,7 +165,9 @@ async function startBackground() {
     if (backgroundStarted) return;
     backgroundStarted = true;
     notifyx.startReminderScheduler();
+    require('./reminder.service').startWorker();
     profile.loadPersistedPresence().catch(error => console.warn('[ext] Không tải được lần cuối truy cập:', error.message));
+    await require('./lib/redisRateLimit').connect().catch(error => console.warn('[redis] Không kết nối được (giới hạn tốc độ):', error.message));
     await require('./realtime-redis').installRedisBridge().catch(error => console.warn('[redis] Không kết nối được:', error.message));
 }
 

@@ -1,4 +1,6 @@
 const { httpError } = require('../utils/httpError');
+// NFR-13: khi co REDIS_URL, bo dem dung chung giua cac tien trinh (extensions/lib/redisRateLimit.js).
+const sharedLimit = require('../extensions/lib/redisRateLimit');
 
 function allowedOrigins() {
     return (process.env.CORS_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173')
@@ -30,7 +32,9 @@ function originGuard(req, res, next) {
 // Gioi han so lan thu (bo nho trong tien trinh - du cho demo 1 may chu).
 function rateLimit({ windowMs, max, key, code = 'TOO_MANY_REQUESTS', message }) {
     const hits = new Map();
+    const sharedName = sharedLimit.register({ windowMs, max, code, message });
     return (req, res, next) => {
+        if (sharedLimit.ready()) return sharedLimit.limit(sharedName, key(req), { windowMs, max, code, message }, res, next);
         const now = Date.now();
         const id = key(req);
         const entry = hits.get(id);

@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react';
 
 export const EXTRA_EVENTS = [
   'message:extra', 'message:edited', 'message:restored', 'poll:updated', 'avatar:changed', 'group:updated',
-  'conversation:prefs', 'story:changed', 'account:security', 'report:new'
+  'conversation:prefs', 'story:changed', 'account:security', 'report:new',
+  // Cong viec & Lich, Hop truc tuyen
+  'task:changed', 'calendar:changed', 'meeting:changed', 'meeting:signal', 'meeting:joined', 'meeting:left', 'meeting:media', 'meeting:chat', 'meeting:ended'
 ];
 
 export function useSse(names, handler) {

@@ -3,6 +3,8 @@
 #   (lan dau) docker compose -f docker-compose.full.yml exec backend node backend/scripts/init-db.js
 #            docker compose -f docker-compose.full.yml exec backend node backend/scripts/migrate.js
 # Mo http://localhost:8080
+# NFR-15: luu tep tren MinIO -> STORAGE_DRIVER=s3 MINIO_ROOT_PASSWORD=<mat-khau-manh> docker compose -f docker-compose.full.yml up -d
+#         (mac dinh STORAGE_DRIVER=disk: luu trong volume uploads nhu cu)
 services:
   cassandra:
     image: cassandra:4.1
@@ -25,6 +27,27 @@ services:
   redis:
     image: redis:7-alpine
 
+  # NFR-15: object storage tuong thich S3 (chi trong mang noi bo, khong mo cong ra ngoai).
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chatott}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-doi-mat-khau-nay-khi-trien-khai}
+    volumes:
+      - minio_data:/data
+
+  # Tao bucket mot lan (chay lai khong loi).
+  minio-init:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do sleep 2; done;
+      mc mb --ignore-existing local/chatott"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-chatott}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-doi-mat-khau-nay-khi-trien-khai}
+
   backend:
     build:
       context: .
@@ -43,6 +66,11 @@ services:
       LOG_REQUESTS: "false"
       PAGE_TOKEN_SECRET: ${PAGE_TOKEN_SECRET:-doi-chuoi-nay-khi-trien-khai}
       ADMIN_EMAILS: ${ADMIN_EMAILS:-an@chatott.demo}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-disk}
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: chatott
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-chatott}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-doi-mat-khau-nay-khi-trien-khai}
     volumes:
       - uploads:/app/storage
     restart: unless-stopped
@@ -57,3 +85,4 @@ services:
 volumes:
   cassandra_data:
   uploads:
+  minio_data:

@@ -14,7 +14,9 @@ const realtime = require('../services/realtime.service');
 const userService = require('../services/user.service');
 const notificationService = require('../services/notification.service');
 
-const EXTRA_TYPES = ['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST', 'REPORT_UPDATE', 'FRIEND_POST', 'FRIEND_STORY', 'STORY_REACTION'];
+const EXTRA_TYPES = ['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST', 'REPORT_UPDATE', 'FRIEND_POST', 'FRIEND_STORY', 'STORY_REACTION',
+    // Cong viec & Lich, Hop truc tuyen
+    'TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_STATUS', 'TASK_COMMENT', 'MEETING_INVITE', 'MEETING_UPDATED', 'MEETING_CANCELLED', 'REMINDER'];
 const ALL_TYPES = () => notificationService.TYPES.slice();
 
 const TYPE_TEXT = {
@@ -31,7 +33,15 @@ const TYPE_TEXT = {
     REPORT_UPDATE: 'Báo cáo của bạn đã được xử lý',
     FRIEND_POST: 'vừa đăng bài viết mới',
     FRIEND_STORY: 'vừa thêm tin mới',
-    STORY_REACTION: 'đã bày tỏ cảm xúc về tin của bạn'
+    STORY_REACTION: 'đã bày tỏ cảm xúc về tin của bạn',
+    TASK_ASSIGNED: 'đã giao cho bạn một công việc',
+    TASK_UPDATED: 'đã cập nhật công việc',
+    TASK_STATUS: 'đã đổi trạng thái công việc',
+    TASK_COMMENT: 'đã bình luận công việc',
+    MEETING_INVITE: 'mời bạn tham gia cuộc họp',
+    MEETING_UPDATED: 'đã đổi lịch cuộc họp',
+    MEETING_CANCELLED: 'đã hủy cuộc họp',
+    REMINDER: 'Nhắc nhở'
 };
 
 // ===== PT-25 =====
@@ -156,6 +166,29 @@ async function pushIfOffline(ev) {
     });
 }
 
+// Sau khi tao thong bao: ghi tham chieu tai nguyen (cong viec / cuoc hop) + day Web Push neu nguoi nhan khong mo tab.
+async function afterNotified(ev, id) {
+    if (ev.ref && ev.ref.type && ev.ref.id) {
+        await db.execute('INSERT INTO notification_refs (user_id, notification_id, ref_type, ref_id) VALUES (?, ?, ?, ?)',
+            [ev.recipientId, id, String(ev.ref.type), String(ev.ref.id)]);
+    }
+    pushIfOffline(ev).catch(error => console.warn('[push] Lỗi gửi thông báo đẩy:', error.message));
+}
+
+// GET /notifications: gan ref (loai + id tai nguyen) cho thong bao cong viec / cuoc hop.
+async function decorateNotifications(body, req) {
+    const items = Array.isArray(body.items) ? body.items : [];
+    for (const n of items) {
+        // Thong bao he thong (nhac nho, nhac han): hien ten ung dung thay vi 'Nguoi dung'.
+        if (n.actor && n.actor.userId === 'system') n.actor = { userId: 'system', displayName: 'ChatOTT' };
+        if (!/^(TASK_|MEETING_|REMINDER)/.test(n.type)) continue;
+        const r = (await db.execute('SELECT ref_type, ref_id FROM notification_refs WHERE user_id = ? AND notification_id = ?',
+            [req.user.userId, TimeUuid.fromString(n.notificationId)])).first();
+        if (r) n.ref = { type: r.ref_type, id: r.ref_id };
+    }
+    return body;
+}
+
 // ===== Boc notifySafe =====
 function installNotificationHooks() {
     if (notificationService.__extended) return;
@@ -168,7 +201,7 @@ function installNotificationHooks() {
             console.warn('[ext] Không đọc được cài đặt thông báo:', error.message);
         }
         const id = await original(ev);
-        if (id) pushIfOffline(ev).catch(error => console.warn('[push] Lỗi gửi thông báo đẩy:', error.message));
+        if (id) await afterNotified(ev, id).catch(error => console.warn('[ext] Lỗi sau khi tạo thông báo:', error.message));
         return id;
     };
     notificationService.__extended = true;
@@ -237,6 +270,6 @@ function startReminderScheduler() {
 }
 
 module.exports = {
-    EXTRA_TYPES, getSettings, updateSettings, shouldDeliver, pushStatus, subscribe, unsubscribe, sendPush,
+    EXTRA_TYPES, afterNotified, decorateNotifications, getSettings, updateSettings, shouldDeliver, pushStatus, subscribe, unsubscribe, sendPush,
     installNotificationHooks, syncTaskReminder, readTaskBefore, runReminders, startReminderScheduler
 };

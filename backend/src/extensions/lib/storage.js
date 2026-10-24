@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const { httpError } = require('../../utils/httpError');
 const { sniff } = require('../../utils/fileType');
 const attachments = require('../../services/attachment.service');
+const blob = require('./blobstore');
 
 const IMAGE_MIME = { jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp' };
 const KEY_RE = /^\d{4}\/\d{2}\/[0-9a-f-]{36}$/;
@@ -44,17 +45,26 @@ async function save(area, buffer) {
     const tmp = full + '.part';
     await fs.promises.writeFile(tmp, buffer, { flag: 'wx', mode: 0o600 });
     await fs.promises.rename(tmp, full);
+    // NFR-15: STORAGE_DRIVER=s3 -> day len S3/MinIO; loi -> xoa ban cuc bo, bao loi.
+    try {
+        await blob.pushFile(full);
+    } catch (error) {
+        await fs.promises.unlink(full).catch(() => {});
+        console.warn('[lưu trữ] Lỗi S3:', error.message);
+        throw httpError(503, 'STORAGE_UNAVAILABLE', 'Máy chủ lưu trữ tệp tạm thời không khả dụng, vui lòng thử lại.');
+    }
     return key;
 }
 
 async function remove(area, key) {
     if (!key) return;
-    await fs.promises.unlink(fullPath(area, key)).catch(() => {});
+    await blob.removeFile(fullPath(area, key));
 }
 
 // Gui tep anh ve trinh duyet (chi qua API co kiem tra dang nhap).
 async function sendFile(res, area, key, mime, maxAge = 300) {
     const full = fullPath(area, key);
+    await blob.ensureLocal(full).catch(error => console.warn('[lưu trữ] Lỗi S3:', error.message));
     const stat = await fs.promises.stat(full).catch(() => null);
     if (!stat) throw httpError(404, 'FILE_GONE', 'Tệp không còn trên máy chủ.');
     res.set({

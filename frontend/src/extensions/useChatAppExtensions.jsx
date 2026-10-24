@@ -5,13 +5,16 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import AccountSettings from './AccountSettings';
 import AdminPage from './AdminPage';
 import AssistantPage from './AssistantPage';
+import WorkPage from './WorkPage';
+import MeetingRoom from './MeetingRoom';
+import { work } from './workApi';
 import { JoinInviteDialog, PostListPage } from './SocialExtras';
 import { ext } from './extApi';
 import { useSse } from './sse';
 import { loadPrefs } from './prefsStore';
 import { registerSw } from './push';
 
-export const EXTRA_VIEWS = ['settings', 'saved', 'hashtag', 'admin', 'assistant'];
+export const EXTRA_VIEWS = ['settings', 'saved', 'hashtag', 'admin', 'assistant', 'work'];
 
 // Bam anh dai dien o bat ky dau -> mo ho so. Bo qua noi bam anh co y nghia khac.
 const AVATAR_SKIP = '.rail-account, .picker-list, .ext-mention-pop, .ext-story-tile, .ext-story-viewer, .ext-story-compose, .profile-dialog, .ext-cropper';
@@ -31,6 +34,8 @@ export default function useChatAppExtensions({ user, view, setView, conversation
   const [tag, setTag] = useState('');
   const [invite, setInvite] = useState(() => takeParam('invite'));
   const [settingsTab, setSettingsTab] = useState('profile');
+  const [workTarget, setWorkTarget] = useState(null);
+  const [room, setRoom] = useState(null);
 
   const loadSecurity = useCallback(() => ext.security().then(setSecurity).catch(() => {}), []);
   useEffect(() => { loadSecurity(); loadPrefs(); registerSw().catch(() => {}); }, [loadSecurity]);
@@ -59,12 +64,25 @@ export default function useChatAppExtensions({ user, view, setView, conversation
       const d = e.detail || {};
       if (d.view === 'hashtag') setTag(String(d.tag || '').toLowerCase());
       if (d.view === 'settings' && d.tab) setSettingsTab(d.tab);
+      if (d.view === 'work') setWorkTarget(d.ref ? { ...d.ref, at: Date.now() } : null);
       if (d.view === 'chat' && d.conversationId) openConversation(d.conversationId);
       setView(d.view);
     };
     window.addEventListener('chatott:navigate', onNav);
     return () => window.removeEventListener('chatott:navigate', onNav);
   }, [setView, openConversation]);
+
+  // Vao phong hop tu bat ky dau (danh sach, thong bao, link moi ?meetingInvite=CODE).
+  useEffect(() => {
+    const onJoin = e => e.detail?.meetingId && setRoom(e.detail.meetingId);
+    window.addEventListener('chatott:join-meeting', onJoin);
+    const code = takeParam('meetingInvite');
+    if (code) {
+      work.joinByLink(code).then(m => { setView('work'); setWorkTarget({ type: 'MEETING', id: m.meetingId, at: Date.now() }); })
+        .catch(err => setToast(err.message));
+    }
+    return () => window.removeEventListener('chatott:join-meeting', onJoin);
+  }, [setView, setToast]);
 
   function render() {
     if (!EXTRA_VIEWS.includes(view)) return null;
@@ -75,6 +93,7 @@ export default function useChatAppExtensions({ user, view, setView, conversation
           {view === 'saved' && <PostListPage mode="saved" user={user} conversations={conversations} onOpenProfile={onOpenProfile} onToast={setToast} />}
           {view === 'hashtag' && <PostListPage mode="hashtag" tag={tag} user={user} conversations={conversations} onOpenProfile={onOpenProfile} onToast={setToast} />}
           {view === 'assistant' && <AssistantPage user={user} onToast={setToast} />}
+          {view === 'work' && <WorkPage user={user} conversations={conversations} onToast={setToast} target={workTarget} />}
           {view === 'admin' && (security?.isAdmin ? <AdminPage user={user} onToast={setToast} />
             : <p className="muted pad">Chức năng chỉ dành cho quản trị viên.</p>)}
         </ErrorBoundary>
@@ -82,10 +101,18 @@ export default function useChatAppExtensions({ user, view, setView, conversation
     );
   }
 
-  const overlays = invite ? (
+  const roomOverlay = room ? (
+    <ErrorBoundary resetKey={room} message="Phòng họp gặp lỗi hiển thị.">
+      <MeetingRoom key={room} meetingId={room} user={user} onToast={setToast} onClose={() => setRoom(null)} />
+    </ErrorBoundary>
+  ) : null;
+
+  const inviteOverlay = invite ? (
     <JoinInviteDialog code={invite} onToast={setToast} onClose={() => setInvite(null)}
       onJoined={async id => { setInvite(null); setView('chat'); await loadConversations(); openConversation(id); }} />
   ) : null;
+
+  const overlays = <>{inviteOverlay}{roomOverlay}</>;
 
   return { security, isAdmin: Boolean(security?.isAdmin), render, overlays };
 }

@@ -346,6 +346,11 @@ async function sendVoice(conversationId, user, { buffer, durationMs }) {
     await fs.promises.mkdir(path.dirname(full), { recursive: true });
     await fs.promises.writeFile(full + '.part', buffer, { flag: 'wx', mode: 0o600 });
     await fs.promises.rename(full + '.part', full);
+    await require('./lib/blobstore').pushFile(full, type.mime).catch(async error => {
+        await fs.promises.unlink(full).catch(() => {});
+        console.warn('[lưu trữ] Lỗi S3:', error.message);
+        throw httpError(503, 'STORAGE_UNAVAILABLE', 'Máy chủ lưu trữ tệp tạm thời không khả dụng, vui lòng thử lại.');
+    });
     const fileName = `Tin nhắn thoại ${Math.max(1, Math.round(ms / 1000))}s.${type.ext}`;
     try {
         const rs = await db.execute(
@@ -356,7 +361,7 @@ async function sendVoice(conversationId, user, { buffer, durationMs }) {
                 require('crypto').createHash('sha256').update(buffer).digest('hex'), storageKey, now]);
         if (!rs.wasApplied()) throw new Error('attachment id collision');
     } catch (error) {
-        await fs.promises.unlink(full).catch(() => {});
+        await require('./lib/blobstore').removeFile(full);
         throw error;
     }
     return sendSpecial(conversationId, user, undefined, { kind: 'VOICE', voice_ms: ms }, { attachmentIds: [aid.toString()] });

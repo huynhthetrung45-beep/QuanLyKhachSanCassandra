@@ -203,6 +203,7 @@ export default function ChatApp({ user, onLogout, onUserChanged }) {
   }
 
   function openNotification(n) {
+    if (n.ref && ['TASK', 'MEETING', 'EVENT'].includes(n.ref.type)) return window.dispatchEvent(new CustomEvent('chatott:navigate', { detail: { view: 'work', ref: n.ref } }));
     if (['POST_REACTION', 'POST_COMMENT', 'COMMENT_REPLY', 'POST_SHARE'].includes(n.type) && n.postId) {
       setPostModal({ postId: n.postId, openComments: n.type === 'POST_COMMENT' || n.type === 'COMMENT_REPLY' });
     } else if (n.type === 'MESSAGE' && n.conversationId) {
@@ -275,6 +276,7 @@ export default function ChatApp({ user, onLogout, onUserChanged }) {
         onShowHashtag={() => setView('hashtag')}
         onShowAdmin={() => setView('admin')}
         onShowAssistant={() => setView('assistant')}
+        onShowWork={() => setView('work')}
       />
 
       {(view === 'feed' || view === 'profile') && (

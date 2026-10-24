@@ -5,6 +5,8 @@ Trọng tâm môn học là bảng `messages_by_conversation` và phân trang b�
 Bên trên là một ứng dụng chat có đăng ký, đăng nhập, hội thoại 1-1, nhóm chat, chưa đọc, ghim và nhận tin trực tiếp.
 
 > **Chức năng mới (PT-01 … PT-26: đổi/quên mật khẩu, 2FA, sửa tin, bình chọn, story, quản trị…)?** Xem [HUONG_DAN_CHUC_NANG_MOI.md](HUONG_DAN_CHUC_NANG_MOI.md).
+>
+> **Công việc & Lịch, Nhắc nhở, Họp trực tuyến (WebRTC)?** Xem [TAI_LIEU_CONG_VIEC_LICH_HOP.md](TAI_LIEU_CONG_VIEC_LICH_HOP.md).
 
 > **Cài trên máy mới (clone từ Git, Cassandra trống)?** Làm theo [HUONG_DAN_CAI_DAT.md](HUONG_DAN_CAI_DAT.md). Mục 1 bên dưới chỉ dành cho máy đã có sẵn dữ liệu.
 

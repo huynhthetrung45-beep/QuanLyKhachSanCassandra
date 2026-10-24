@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AtSign, Clock, UserRoundPlus, ShieldCheck, Newspaper, Images } from 'lucide-react';
+import { AlarmClock, CalendarX, ClipboardCheck, Video } from 'lucide-react';
 import { Bell, CheckCheck, Heart, LoaderCircle, MessageCircle, MessageSquare, Reply, RotateCcw, Share2, UserCheck, UserPlus } from 'lucide-react';
 import Avatar from './Avatar';
 import { api } from '../api';
@@ -21,6 +22,14 @@ const KIND = {
   REPORT_UPDATE: { icon: ShieldCheck, text: n => n.preview || 'Báo cáo của bạn đã được xử lý.' },
   FRIEND_POST: { icon: Newspaper, text: n => `vừa đăng bài viết mới${n.preview ? `: “${n.preview}”` : ''}` },
   FRIEND_STORY: { icon: Images, text: n => `vừa thêm tin mới${n.preview && n.preview !== 'đã thêm một tin mới' ? `: “${n.preview}”` : ''}` },
+  TASK_ASSIGNED: { icon: ClipboardCheck, text: n => `đã giao cho bạn công việc ${n.preview}` },
+  TASK_UPDATED: { icon: ClipboardCheck, text: n => `đã cập nhật công việc ${n.preview}` },
+  TASK_STATUS: { icon: ClipboardCheck, text: n => `đã đổi trạng thái công việc ${n.preview}` },
+  TASK_COMMENT: { icon: MessageSquare, text: n => `đã bình luận công việc ${n.preview}` },
+  MEETING_INVITE: { icon: Video, text: n => `mời bạn họp ${n.preview}` },
+  MEETING_UPDATED: { icon: Video, text: n => `đã đổi lịch cuộc họp ${n.preview}` },
+  MEETING_CANCELLED: { icon: CalendarX, text: n => `đã hủy cuộc họp ${n.preview}` },
+  REMINDER: { icon: AlarmClock, text: n => `Nhắc nhở — ${n.preview}` },
   STORY_REACTION: { icon: Heart, text: n => `đã bày tỏ cảm xúc ${({ LIKE: '👍', LOVE: '❤️', HAHA: '😆', WOW: '😮', SAD: '😢', ANGRY: '😡' })[n.preview] || ''} về tin của bạn` }
 };
 
