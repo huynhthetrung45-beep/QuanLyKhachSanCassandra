@@ -1,0 +1,6 @@
+◇ injected env (0) from backend\.env
+◇ injected env (0) from backend\.env
+Backend đang chạy tại http://localhost:3999
+
+health: {"status":200,"body":"{\"status\":\"OK\",\"message\":\"Backend và Cassandra hoạt động bình thường\",\"keyspace\":\"chat_ott\",\"missingTables\":[]}"}
+protected: {"status":401,"body":"{\"error\":{\"code\":\"UNAUTHENTICATED\",\"message\":\"Bạn cần đăng nhập để tiếp tục.\"}}"}

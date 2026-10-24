@@ -1,0 +1,23 @@
+{
+  "code": 1,
+  "results": [
+    {
+      "stage": "A",
+      "name": "Đúng thư mục dự án và đủ script",
+      "ok": true,
+      "detail": "package chatott"
+    },
+    {
+      "stage": "A",
+      "name": "Container chatott-cassandra đang chạy",
+      "ok": true,
+      "detail": "running healthy"
+    },
+    {
+      "stage": "A",
+      "name": "Backend cổng 3000 đã dừng (tránh chạy song song với migration)",
+      "ok": false,
+      "detail": "đang chạy (HTTP 200) - hãy dừng backend rồi chạy lại"
+    }
+  ]
+}

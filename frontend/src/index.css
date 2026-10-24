@@ -1,0 +1,64 @@
+/* ChatOTT - token mau, chu va thiet lap nen tang */
+:root {
+  --harbor: #16324f;       /* thanh dieu huong, mang thuong hieu */
+  --harbor-2: #1f4468;
+  --teal: #0f8f87;         /* hanh dong chinh */
+  --teal-deep: #0b6f69;
+  --teal-wash: #e3f4f2;    /* nen muc dang chon */
+  --bubble-mine: #d4efea;
+  --paper: #ffffff;
+  --chat-bg: #eef2f4;
+  --line: #dde4e8;
+  --line-strong: #c9d3d9;
+  --text: #1b2a33;
+  --text-2: #4f616c;
+  --muted: #7a8b95;
+  --danger: #c4413a;
+  --danger-wash: #fbeceb;
+  --warn-wash: #fff5df;
+  --ok-wash: #e4f5ea;
+  --focus: #2f8fd6;
+
+  --font: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-bubble: 16px;
+  --shadow-pop: 0 12px 32px rgba(22, 50, 79, 0.18), 0 2px 6px rgba(22, 50, 79, 0.08);
+
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--chat-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body { overflow: hidden; }
+
+button, input, textarea, select { font: inherit; color: inherit; }
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+h1, h2, h3, h4, h5, p { margin: 0; }
+
+code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 12.5px; }
+
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

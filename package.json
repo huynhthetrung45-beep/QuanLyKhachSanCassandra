@@ -1,0 +1,54 @@
+{
+  "name": "chatott",
+  "version": "1.1.0",
+  "description": "ChatOTT - ứng dụng chat, lưu lịch sử tin nhắn trên Apache Cassandra (Đề tài 09)",
+  "main": "backend/src/app.js",
+  "scripts": {
+    "start": "node backend/src/app.js",
+    "dev": "nodemon backend/src/app.js",
+    "db:init": "node backend/scripts/init-db.js",
+    "migrate": "node backend/scripts/migrate.js",
+    "migrate:dry": "node backend/scripts/migrate.js --dry-run",
+    "check:db": "node backend/scripts/check-cassandra.js",
+    "audit:db": "node backend/scripts/audit-db.js",
+    "seed": "node backend/scripts/seed-chat-data.js",
+    "seed:accounts": "node backend/scripts/seed-demo-accounts.js",
+    "bench": "node backend/scripts/bench.js",
+    "attachments:cleanup": "node backend/scripts/cleanup-attachments.js",
+    "test": "node --test backend/tests/api.test.js backend/tests/features.test.js backend/tests/cleanup.test.js backend/tests/social.test.js backend/tests/posts.test.js backend/tests/insights.test.js backend/tests/comments.test.js backend/tests/chatsearch.test.js backend/tests/pins.test.js backend/tests/bench.test.js backend/tests/migrate.test.js backend/tests/verify-cql.test.js backend/tests/deploy.test.js backend/tests/init-db.test.js backend/tests/extensions.test.js",
+    "deploy:migration": "node backend/scripts/deploy-migration.js",
+    "test:integration": "node --test --test-concurrency=1 backend/tests/integration.test.js",
+    "bench:api": "node backend/scripts/bench-api.js",
+    "bench:scale": "node backend/scripts/bench-scale.js",
+    "start:https": "node backend/src/https.js",
+    "admin:grant": "node backend/scripts/grant-admin.js",
+    "hashtags:backfill": "node backend/scripts/backfill-hashtags.js",
+    "stories:cleanup": "node backend/scripts/cleanup-stories.js",
+    "cluster:replication": "node backend/scripts/cluster-replication.js"
+  },
+  "keywords": [
+    "cassandra",
+    "chat",
+    "nosql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cassandra-driver": "^4.10.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "optionalDependencies": {
+    "nodemailer": "^6.9.16",
+    "redis": "^4.7.0",
+    "web-push": "^3.6.7"
+  }
+}

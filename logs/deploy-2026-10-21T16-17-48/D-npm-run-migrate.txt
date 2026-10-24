@@ -1,0 +1,55 @@
+
+> chatott@1.1.0 migrate
+> node backend/scripts/migrate.js
+
+Keyspace: chat_ott
+
+(1) Bảng mới
+  = bảng accounts_by_email đã có, đúng cấu trúc — bỏ qua
+  = bảng sessions đã có, đúng cấu trúc — bỏ qua
+  = bảng direct_conversations đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_state_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng users_by_name_token đã có, đúng cấu trúc — bỏ qua
+  = bảng reactions_by_message đã có, đúng cấu trúc — bỏ qua
+  = bảng attachments_by_conversation đã có, đúng cấu trúc — bỏ qua
+  = bảng hidden_messages_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng user_profiles đã có, đúng cấu trúc — bỏ qua
+  = bảng usernames đã có, đúng cấu trúc — bỏ qua
+  = bảng relationships đã có, đúng cấu trúc — bỏ qua
+  = bảng friend_requests_by_receiver đã có, đúng cấu trúc — bỏ qua
+  = bảng friend_requests_by_sender đã có, đúng cấu trúc — bỏ qua
+  = bảng friends_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng blocked_users_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng posts đã có, đúng cấu trúc — bỏ qua
+  = bảng posts_by_author đã có, đúng cấu trúc — bỏ qua
+  = bảng post_media đã có, đúng cấu trúc — bỏ qua
+  = bảng post_reactions đã có, đúng cấu trúc — bỏ qua
+  = bảng post_comments đã có, đúng cấu trúc — bỏ qua
+  + tạo bảng public_posts_by_month
+  + tạo bảng post_shares
+
+(2) Cột mới trên bảng cũ
+  = cột users.email đã có — bỏ qua
+  = cột conversations.created_by đã có — bỏ qua
+  = cột conversations_by_user.last_sender_id đã có — bỏ qua
+  = cột messages_by_conversation.reply_to_id đã có — bỏ qua
+  = cột messages_by_conversation.reply_to_created_at đã có — bỏ qua
+  = cột messages_by_conversation.attachment_ids đã có — bỏ qua
+  = cột messages_by_conversation.forwarded đã có — bỏ qua
+  = cột messages_by_conversation.shared_post_id đã có — bỏ qua
+  ✓ tạo bảng public_posts_by_month
+  ✓ tạo bảng post_shares
+
+(3) Backfill (chỉ ghi vào bảng mới)
+  direct_conversations: 9 hội thoại 1-1 -> mới 0, đã có 9
+  users_by_name_token: 9 người dùng -> ghi 0 dòng token, đã có 18
+  public_posts_by_month / post_shares: 1 bài -> ghi 1 bài công khai, 0 lượt chia sẻ, đã có 0
+
+(4) Kiểm tra lại cấu trúc sau migration: khớp thiết kế
+
+Đã thực thi 3 lệnh ghi. Không có lệnh xóa dữ liệu.
+
+[stderr]
+◇ injected env (0) from backend\.env
+
+[exit code] 0

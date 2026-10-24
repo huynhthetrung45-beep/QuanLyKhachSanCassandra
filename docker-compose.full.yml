@@ -1,0 +1,59 @@
+# NFR-19: chay toan bo ChatOTT bang Docker (Cassandra + backend + frontend).
+#   docker compose -f docker-compose.full.yml up -d --build
+#   (lan dau) docker compose -f docker-compose.full.yml exec backend node backend/scripts/init-db.js
+#            docker compose -f docker-compose.full.yml exec backend node backend/scripts/migrate.js
+# Mo http://localhost:8080
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: chatott-cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: ChatOTTCluster
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      MAX_HEAP_SIZE: 2G
+      HEAP_NEWSIZE: 400M
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh 127.0.0.1 9042 -e 'DESCRIBE KEYSPACES'"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 90s
+
+  redis:
+    image: redis:7-alpine
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    environment:
+      CASSANDRA_HOSTS: cassandra
+      CASSANDRA_LOCAL_DATACENTER: datacenter1
+      CASSANDRA_KEYSPACE: chat_ott
+      CORS_ORIGINS: http://localhost:8080
+      APP_URL: http://localhost:8080
+      REDIS_URL: redis://redis:6379
+      LOG_FORMAT: json
+      LOG_REQUESTS: "false"
+      PAGE_TOKEN_SECRET: ${PAGE_TOKEN_SECRET:-doi-chuoi-nay-khi-trien-khai}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-an@chatott.demo}
+    volumes:
+      - uploads:/app/storage
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  cassandra_data:
+  uploads:

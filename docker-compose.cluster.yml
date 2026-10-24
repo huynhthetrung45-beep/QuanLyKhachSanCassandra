@@ -1,0 +1,46 @@
+# NFR-14: cum Cassandra 3 nut (can ~6 GB RAM trong). Dung thay cho docker-compose.yml khi thu nghiem cum.
+#   docker compose -f docker-compose.cluster.yml up -d      (cho ca 3 nut healthy, nut 2-3 khoi dong lan luot)
+#   npm run cluster:replication -- --apply                 (RF = 3)
+#   backend/.env: CASSANDRA_HOSTS=127.0.0.1,127.0.0.1:9043,127.0.0.1:9044  CASSANDRA_CONSISTENCY=localQuorum
+x-cassandra: &cassandra
+  image: cassandra:4.1
+  environment: &env
+    CASSANDRA_CLUSTER_NAME: ChatOTTCluster
+    CASSANDRA_DC: datacenter1
+    CASSANDRA_RACK: rack1
+    CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    CASSANDRA_SEEDS: cassandra1
+    MAX_HEAP_SIZE: 1G
+    HEAP_NEWSIZE: 200M
+  healthcheck:
+    test: ["CMD-SHELL", "nodetool status | grep -q '^UN'"]
+    interval: 30s
+    timeout: 15s
+    retries: 15
+    start_period: 120s
+
+services:
+  cassandra1:
+    <<: *cassandra
+    container_name: chatott-cassandra
+    ports: ["9042:9042"]
+    volumes: [c1:/var/lib/cassandra]
+  cassandra2:
+    <<: *cassandra
+    container_name: chatott-cassandra-2
+    ports: ["9043:9042"]
+    volumes: [c2:/var/lib/cassandra]
+    depends_on:
+      cassandra1: { condition: service_healthy }
+  cassandra3:
+    <<: *cassandra
+    container_name: chatott-cassandra-3
+    ports: ["9044:9042"]
+    volumes: [c3:/var/lib/cassandra]
+    depends_on:
+      cassandra2: { condition: service_healthy }
+
+volumes:
+  c1:
+  c2:
+  c3:

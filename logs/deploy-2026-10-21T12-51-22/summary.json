@@ -1,0 +1,119 @@
+{
+  "code": 1,
+  "results": [
+    {
+      "stage": "A",
+      "name": "Đúng thư mục dự án và đủ script",
+      "ok": true,
+      "detail": "package chatott, migration mới nhất 002, kiểm tra db/verify-002-before.cql / db/verify-002-after.cql"
+    },
+    {
+      "stage": "A",
+      "name": "Container chatott-cassandra đang chạy",
+      "ok": true,
+      "detail": "running healthy"
+    },
+    {
+      "stage": "A",
+      "name": "Backend cổng 3000 đã dừng (tránh chạy song song với migration)",
+      "ok": true,
+      "detail": "không có tiến trình lắng nghe"
+    },
+    {
+      "stage": "A",
+      "name": "Kết nối Cassandra qua driver backend",
+      "ok": true,
+      "detail": "Cassandra 4.1.12, cluster ChatOTTCluster, keyspace chat_ott"
+    },
+    {
+      "stage": "B",
+      "name": "Ảnh chụp dữ liệu cũ",
+      "ok": true,
+      "detail": "users=9, conversations=11, membership=30, messages=473"
+    },
+    {
+      "stage": "B",
+      "name": "Kỳ vọng backfill tính từ dữ liệu nguồn",
+      "ok": true,
+      "detail": "direct_conversations=8, users_by_name_token=18"
+    },
+    {
+      "stage": "B",
+      "name": "Dry-run migration",
+      "ok": true,
+      "detail": "tạo 3 bảng, thêm 4 cột, đã có: 8, 7 lệnh ghi dự kiến, 0 lệnh đã gửi"
+    },
+    {
+      "stage": "B",
+      "name": "verify-migration before 002 (cqlsh)",
+      "ok": true,
+      "detail": "mã thoát 0"
+    },
+    {
+      "stage": "C",
+      "name": "Người dùng xác nhận",
+      "ok": true,
+      "detail": "đã gõ MIGRATE"
+    },
+    {
+      "stage": "D",
+      "name": "npm run migrate",
+      "ok": true,
+      "detail": "mã thoát 0"
+    },
+    {
+      "stage": "E",
+      "name": "Schema khớp thiết kế (dry-run lần 2: không còn gì để tạo)",
+      "ok": true,
+      "detail": "tạo 0, thêm 0, đã có 15"
+    },
+    {
+      "stage": "E",
+      "name": "Dữ liệu cũ, cột/khóa cũ, replication, TTL, compaction, gc_grace không đổi",
+      "ok": false,
+      "detail": "cột/khóa cũ của users đã thay đổi; cột/khóa cũ của conversations đã thay đổi; cột/khóa cũ của conversations_by_user đã thay đổi"
+    },
+    {
+      "stage": "E",
+      "name": "Backfill đúng theo dữ liệu nguồn",
+      "ok": true,
+      "detail": "8 cặp 1-1, 18 token"
+    },
+    {
+      "stage": "E",
+      "name": "npm run audit:db",
+      "ok": true,
+      "detail": "không phát hiện bất nhất"
+    },
+    {
+      "stage": "E",
+      "name": "verify-migration after 002 (cqlsh)",
+      "ok": true,
+      "detail": "mã thoát 0"
+    },
+    {
+      "stage": "F",
+      "name": "npm test (Cassandra GIẢ LẬP)",
+      "ok": true,
+      "detail": "mã thoát 0"
+    },
+    {
+      "stage": "F",
+      "name": "Backend khởi động, /api/health = OK, không thiếu bảng",
+      "ok": true,
+      "detail": "HTTP 200, status=OK, missingTables=[]"
+    },
+    {
+      "stage": "F",
+      "name": "API chat chặn khi chưa đăng nhập",
+      "ok": true,
+      "detail": "HTTP 401"
+    },
+    {
+      "stage": "F",
+      "name": "Build frontend",
+      "ok": true,
+      "detail": "mã thoát 0"
+    }
+  ]
+}

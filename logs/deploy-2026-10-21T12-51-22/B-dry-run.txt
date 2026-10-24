@@ -1,0 +1,26 @@
+Keyspace: chat_ott   [DRY RUN — chỉ đọc, không ghi]
+
+(1) Bảng mới
+  = bảng accounts_by_email đã có, đúng cấu trúc — bỏ qua
+  = bảng sessions đã có, đúng cấu trúc — bỏ qua
+  = bảng direct_conversations đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_state_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng users_by_name_token đã có, đúng cấu trúc — bỏ qua
+  + sẽ tạo bảng reactions_by_message
+  + sẽ tạo bảng attachments_by_conversation
+  + sẽ tạo bảng hidden_messages_by_user
+
+(2) Cột mới trên bảng cũ
+  = cột users.email đã có — bỏ qua
+  = cột conversations.created_by đã có — bỏ qua
+  = cột conversations_by_user.last_sender_id đã có — bỏ qua
+  + sẽ thêm cột messages_by_conversation.reply_to_id timeuuid  (dòng cũ = null)
+  + sẽ thêm cột messages_by_conversation.reply_to_created_at timestamp  (dòng cũ = null)
+  + sẽ thêm cột messages_by_conversation.attachment_ids list<uuid>  (dòng cũ = null)
+  + sẽ thêm cột messages_by_conversation.forwarded boolean  (dòng cũ = null)
+
+(3) Backfill (chỉ ghi vào bảng mới)
+  direct_conversations: 8 hội thoại 1-1 -> sẽ ghi 0 dòng (IF NOT EXISTS), đã có 8
+  users_by_name_token: 9 người dùng -> ghi 0 dòng token, đã có 18
+
+DRY RUN: kế hoạch có 7 lệnh ghi (không lệnh nào được gửi tới Cassandra). Không có lệnh xóa dữ liệu.

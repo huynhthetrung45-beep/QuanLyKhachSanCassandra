@@ -1,0 +1,26 @@
+
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: chatott-cassandra
+    restart: unless-stopped
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: ChatOTTCluster
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_RACK: rack1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      MAX_HEAP_SIZE: 2G
+      HEAP_NEWSIZE: 400M
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh 127.0.0.1 9042 -e 'DESCRIBE KEYSPACES'"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 90s
+
+volumes:
+  cassandra_data:

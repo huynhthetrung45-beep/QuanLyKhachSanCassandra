@@ -1,0 +1,488 @@
+
+> chatott@1.1.0 audit:db
+> node backend/scripts/audit-db.js
+
+Cassandra 4.1.12 | cluster ChatOTTCluster | keyspace chat_ott | chế độ: CHỈ ĐỌC
+
+==============================================================================
+1. KEYSPACE
+==============================================================================
+  chat_ott | durable_writes=true | replication={"class":"org.apache.cassandra.locator.SimpleStrategy","replication_factor":"1"}
+
+==============================================================================
+2. BẢNG, CỘT, KHÓA
+==============================================================================
+
+  TABLE accounts_by_email
+    PRIMARY KEY ((email))
+      email                  text           partition_key
+      created_at             timestamp      regular
+      password_hash          text           regular
+      status                 text           regular
+      user_id                text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE ai_summaries_by_conversation
+    PRIMARY KEY ((conversation_id), summary_id)
+    CLUSTERING ORDER BY (summary_id DESC)
+      conversation_id        uuid           partition_key
+      summary_id             timeuuid       clustering
+      created_at             timestamp      regular
+      message_count          int            regular
+      model                  text           regular
+      requested_by           text           regular
+      source_message_ids     list<timeuuid> regular
+      summary                text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE ai_tasks_by_conversation
+    PRIMARY KEY ((conversation_id), task_id)
+    CLUSTERING ORDER BY (task_id DESC)
+      conversation_id        uuid           partition_key
+      task_id                timeuuid       clustering
+      assignee_id            text           regular
+      due_date               text           regular
+      source_message_ids     list<timeuuid> regular
+      status                 text           regular
+      summary_id             timeuuid       regular
+      title                  text           regular
+      updated_at             timestamp      regular
+      updated_by             text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE attachments_by_conversation
+    PRIMARY KEY ((conversation_id), attachment_id)
+    CLUSTERING ORDER BY (attachment_id DESC)
+      conversation_id        uuid           partition_key
+      attachment_id          timeuuid       clustering
+      created_at             timestamp      regular
+      file_name              text           regular
+      kind                   text           regular
+      message_created_at     timestamp      regular
+      message_id             timeuuid       regular
+      mime_type              text           regular
+      sha256                 text           regular
+      size_bytes             bigint         regular
+      status                 text           regular
+      storage_key            text           regular
+      uploader_id            text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE blocked_users_by_user
+    PRIMARY KEY ((user_id), blocked_id)
+    CLUSTERING ORDER BY (blocked_id ASC)
+      user_id                text           partition_key
+      blocked_id             text           clustering
+      created_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE comment_client_ids
+    PRIMARY KEY ((post_id), client_id)
+    CLUSTERING ORDER BY (client_id ASC)
+      post_id                timeuuid       partition_key
+      client_id              uuid           clustering
+      author_id              text           regular
+      comment_id             timeuuid       regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE comment_replies_by_root
+    PRIMARY KEY ((post_id, root_comment_id), comment_id)
+    CLUSTERING ORDER BY (comment_id ASC)
+      post_id                timeuuid       partition_key
+      root_comment_id        timeuuid       partition_key
+      comment_id             timeuuid       clustering
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversation_daily_stats
+    PRIMARY KEY ((conversation_id), day)
+    CLUSTERING ORDER BY (day DESC)
+      conversation_id        uuid           partition_key
+      day                    text           clustering
+      messages               counter        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversation_hourly_stats
+    PRIMARY KEY ((conversation_id), hour)
+    CLUSTERING ORDER BY (hour ASC)
+      conversation_id        uuid           partition_key
+      hour                   int            clustering
+      messages               counter        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversation_sender_stats
+    PRIMARY KEY ((conversation_id), sender_id)
+    CLUSTERING ORDER BY (sender_id ASC)
+      conversation_id        uuid           partition_key
+      sender_id              text           clustering
+      messages               counter        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversation_state_by_user
+    PRIMARY KEY ((user_id), conversation_id)
+    CLUSTERING ORDER BY (conversation_id ASC)
+      user_id                text           partition_key
+      conversation_id        uuid           clustering
+      last_read_at           timestamp      regular
+      pinned                 boolean        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversation_type_stats
+    PRIMARY KEY ((conversation_id), message_type)
+    CLUSTERING ORDER BY (message_type ASC)
+      conversation_id        uuid           partition_key
+      message_type           text           clustering
+      messages               counter        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversations
+    PRIMARY KEY ((conversation_id))
+      conversation_id        uuid           partition_key
+      conversation_name      text           regular
+      conversation_type      text           regular
+      created_at             timestamp      regular
+      created_by             text           regular
+      last_message_at        timestamp      regular
+      participant_ids        set<text>      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE conversations_by_user
+    PRIMARY KEY ((user_id), last_message_at, conversation_id)
+    CLUSTERING ORDER BY (last_message_at DESC, conversation_id ASC)
+      user_id                text           partition_key
+      last_message_at        timestamp      clustering
+      conversation_id        uuid           clustering
+      conversation_name      text           regular
+      conversation_type      text           regular
+      last_message_preview   text           regular
+      last_sender_id         text           regular
+      last_sender_name       text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE direct_conversations
+    PRIMARY KEY ((pair_key))
+      pair_key               text           partition_key
+      conversation_id        uuid           regular
+      created_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE friend_requests_by_receiver
+    PRIMARY KEY ((receiver_id), sender_id)
+    CLUSTERING ORDER BY (sender_id ASC)
+      receiver_id            text           partition_key
+      sender_id              text           clustering
+      created_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE friend_requests_by_sender
+    PRIMARY KEY ((sender_id), receiver_id)
+    CLUSTERING ORDER BY (receiver_id ASC)
+      sender_id              text           partition_key
+      receiver_id            text           clustering
+      created_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE friends_by_user
+    PRIMARY KEY ((user_id), friend_id)
+    CLUSTERING ORDER BY (friend_id ASC)
+      user_id                text           partition_key
+      friend_id              text           clustering
+      since                  timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE hidden_messages_by_user
+    PRIMARY KEY ((user_id, conversation_id), message_id)
+    CLUSTERING ORDER BY (message_id DESC)
+      user_id                text           partition_key
+      conversation_id        uuid           partition_key
+      message_id             timeuuid       clustering
+      hidden_at              timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE message_terms_by_conversation
+    PRIMARY KEY ((conversation_id, term), created_at, message_id)
+    CLUSTERING ORDER BY (created_at DESC, message_id DESC)
+      conversation_id        uuid           partition_key
+      term                   text           partition_key
+      created_at             timestamp      clustering
+      message_id             timeuuid       clustering
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE messages_by_conversation
+    PRIMARY KEY ((conversation_id), created_at, message_id)
+    CLUSTERING ORDER BY (created_at DESC, message_id DESC)
+      conversation_id        uuid           partition_key
+      created_at             timestamp      clustering
+      message_id             timeuuid       clustering
+      attachment_ids         list<uuid>     regular
+      content                text           regular
+      deleted_at             timestamp      regular
+      forwarded              boolean        regular
+      is_deleted             boolean        regular
+      message_type           text           regular
+      reply_to_created_at    timestamp      regular
+      reply_to_id            timeuuid       regular
+      sender_id              text           regular
+      sender_name            text           regular
+      shared_post_id         timeuuid       regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE notification_keys
+    PRIMARY KEY ((user_id), dedupe_key)
+    CLUSTERING ORDER BY (dedupe_key ASC)
+      user_id                text           partition_key
+      dedupe_key             text           clustering
+      notification_id        timeuuid       regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE notifications_by_user
+    PRIMARY KEY ((user_id), notification_id)
+    CLUSTERING ORDER BY (notification_id DESC)
+      user_id                text           partition_key
+      notification_id        timeuuid       clustering
+      actor_id               text           regular
+      comment_id             timeuuid       regular
+      conversation_id        uuid           regular
+      event_count            int            regular
+      is_read                boolean        regular
+      post_id                timeuuid       regular
+      preview                text           regular
+      type                   text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE post_comments
+    PRIMARY KEY ((post_id), comment_id)
+    CLUSTERING ORDER BY (comment_id ASC)
+      post_id                timeuuid       partition_key
+      comment_id             timeuuid       clustering
+      author_id              text           regular
+      content                text           regular
+      created_at             timestamp      regular
+      is_deleted             boolean        regular
+      reply_to_comment_id    timeuuid       regular
+      root_comment_id        timeuuid       regular
+      updated_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE post_media
+    PRIMARY KEY ((media_id))
+      media_id               timeuuid       partition_key
+      created_at             timestamp      regular
+      file_name              text           regular
+      mime_type              text           regular
+      owner_id               text           regular
+      post_id                timeuuid       regular
+      sha256                 text           regular
+      size_bytes             bigint         regular
+      status                 text           regular
+      storage_key            text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE post_reactions
+    PRIMARY KEY ((post_id), user_id)
+    CLUSTERING ORDER BY (user_id ASC)
+      post_id                timeuuid       partition_key
+      user_id                text           clustering
+      reacted_at             timestamp      regular
+      reaction               text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE post_shares
+    PRIMARY KEY ((post_id), share_id)
+    CLUSTERING ORDER BY (share_id ASC)
+      post_id                timeuuid       partition_key
+      share_id               timeuuid       clustering
+      kind                   text           regular
+      user_id                text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE posts
+    PRIMARY KEY ((post_id))
+      post_id                timeuuid       partition_key
+      author_id              text           regular
+      content                text           regular
+      created_at             timestamp      regular
+      is_deleted             boolean        regular
+      media_ids              list<timeuuid> regular
+      privacy                text           regular
+      shared_post_id         timeuuid       regular
+      updated_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE posts_by_author
+    PRIMARY KEY ((author_id), post_id)
+    CLUSTERING ORDER BY (post_id DESC)
+      author_id              text           partition_key
+      post_id                timeuuid       clustering
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE public_posts_by_month
+    PRIMARY KEY ((bucket), post_id)
+    CLUSTERING ORDER BY (post_id DESC)
+      bucket                 text           partition_key
+      post_id                timeuuid       clustering
+      author_id              text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE reactions_by_message
+    PRIMARY KEY ((conversation_id), message_id, user_id)
+    CLUSTERING ORDER BY (message_id DESC, user_id ASC)
+      conversation_id        uuid           partition_key
+      message_id             timeuuid       clustering
+      user_id                text           clustering
+      emoji                  text           regular
+      reacted_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE relationships
+    PRIMARY KEY ((pair_key))
+      pair_key               text           partition_key
+      requester_id           text           regular
+      status                 text           regular
+      updated_at             timestamp      regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE root_comments_by_post
+    PRIMARY KEY ((post_id), comment_id)
+    CLUSTERING ORDER BY (comment_id ASC)
+      post_id                timeuuid       partition_key
+      comment_id             timeuuid       clustering
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE sessions
+    PRIMARY KEY ((session_hash))
+      session_hash           text           partition_key
+      created_at             timestamp      regular
+      expires_at             timestamp      regular
+      user_id                text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE user_profiles
+    PRIMARY KEY ((user_id))
+      user_id                text           partition_key
+      bio                    text           regular
+      updated_at             timestamp      regular
+      username               text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE user_social_stats
+    PRIMARY KEY ((user_id), metric)
+    CLUSTERING ORDER BY (metric ASC)
+      user_id                text           partition_key
+      metric                 text           clustering
+      amount                 counter        regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE usernames
+    PRIMARY KEY ((username))
+      username               text           partition_key
+      created_at             timestamp      regular
+      user_id                text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE users
+    PRIMARY KEY ((user_id))
+      user_id                text           partition_key
+      avatar_url             text           regular
+      created_at             timestamp      regular
+      display_name           text           regular
+      email                  text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+  TABLE users_by_name_token
+    PRIMARY KEY ((token_prefix), name_token, user_id)
+    CLUSTERING ORDER BY (name_token ASC, user_id ASC)
+      token_prefix           text           partition_key
+      name_token             text           clustering
+      user_id                text           clustering
+      avatar_url             text           regular
+      display_name           text           regular
+    default_ttl=0 gc_grace=864000 compaction=org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy
+
+==============================================================================
+3. INDEX / MATERIALIZED VIEW / UDT
+==============================================================================
+  Secondary index: không có
+  Materialized view: không có
+  User-defined type: không có
+
+==============================================================================
+4. ĐỐI CHIẾU CỘT MÀ BACKEND TRUY VẤN
+==============================================================================
+  users                        đủ cột
+  conversations                đủ cột
+  conversations_by_user        đủ cột
+  messages_by_conversation     đủ cột | cột không dùng: attachment_ids, forwarded, reply_to_created_at, reply_to_id, shared_post_id
+  accounts_by_email            đủ cột
+  sessions                     đủ cột
+  direct_conversations         đủ cột
+  conversation_state_by_user   đủ cột
+  users_by_name_token          đủ cột
+
+==============================================================================
+5. DỮ LIỆU (chỉ đọc)
+==============================================================================
+  users: 9 dòng
+  conversations: 12 dòng
+  c3269c2a-a049-41d0-8611-03ab6da7a00d    3 tin | 2 TV | DIRECT | Phạm Dũng - Đặng Linh
+  5614d56e-bda5-4732-a85b-140450b70043    1 tin | 2 TV | DIRECT | Phạm Dũng - Bùi Minh
+  aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa   30 tin | 2 TV | DIRECT | Lê Chi - Vũ Huy
+  77777777-7777-7777-7777-777777777777   30 tin | 2 TV | DIRECT | Vũ Huy - Đặng Linh
+  66666666-6666-6666-6666-666666666666   31 tin | 2 TV | DIRECT | Phạm Dũng - Hoàng Giang
+  99999999-9999-9999-9999-999999999999   30 tin | 2 TV | DIRECT | Trần Bình - Phạm Dũng
+  22222222-2222-2222-2222-222222222222   30 tin | 4 TV | GROUP  | Nhóm Backend
+  44444444-4444-4444-4444-444444444444   30 tin | 2 TV | DIRECT | Nguyễn An - Trần Bình
+  55555555-5555-5555-5555-555555555555   30 tin | 2 TV | DIRECT | Nguyễn An - Lê Chi
+  88888888-8888-8888-8888-888888888888   30 tin | 2 TV | DIRECT | Bùi Minh - Nguyễn An
+  11111111-1111-1111-1111-111111111111  202 tin | 5 TV | GROUP  | Nhóm Đồ án NoSQL
+      conversations.last_message_at=2026-10-21T05:03:13.440Z khác tin mới nhất=2026-10-21T05:23:36.020Z (tin mới nhất đã thu hồi)
+  33333333-3333-3333-3333-333333333333   30 tin | 5 TV | GROUP  | Nhóm Frontend
+  Tổng tin nhắn: 477
+
+==============================================================================
+6. NHẤT QUÁN conversations_by_user  <->  conversations
+==============================================================================
+  u_d09cebde496f4ed1bf85 0 dòng
+  user01     5 dòng
+  user02     5 dòng
+  user03     4 dòng
+  user04     6 dòng
+  user05     3 dòng
+  user06     3 dòng
+  user07     3 dòng
+  user08     3 dòng
+  Tổng dòng conversations_by_user: 32
+
+==============================================================================
+7. PHÂN TRANG Q2 TRÊN HỘI THOẠI TRỌNG TÂM (fetchSize 20, không LIMIT)
+==============================================================================
+  trang  1: 20 dòng, pageState có, 2.57 ms
+  trang  2: 20 dòng, pageState có, 1.84 ms
+  trang 11: 2 dòng, pageState null, 1.29 ms
+  Số trang: 11 | kích thước: 20,20,20,20,20,20,20,20,20,20,2
+  Tổng đọc qua trang: 202 id duy nhất | COUNT(*): 202 | thứ tự giảm dần: đúng
+
+==============================================================================
+8. TIN TRÙNG created_at (BR-07) VÀ TIN ĐÃ THU HỒI
+==============================================================================
+  Cặp/nhóm trùng created_at: 2
+  Tin đã thu hồi: 10; thu hồi nhưng còn content: 0
+
+==============================================================================
+9. BẢNG TÀI KHOẢN (đã có)
+==============================================================================
+  accounts_by_email: 9 dòng {"ACTIVE":9}
+
+==============================================================================
+10. TOKEN TÌM TÊN
+==============================================================================
+  Kiểm tra token của 9 người dùng: thiếu 0
+
+==============================================================================
+TÓM TẮT
+==============================================================================
+  Không phát hiện bất nhất.
+
+[stderr]
+◇ injected env (0) from backend\.env
+
+[exit code] 0

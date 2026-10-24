@@ -1,0 +1,61 @@
+Keyspace: chat_ott   [DRY RUN — chỉ đọc, không ghi]
+
+(1) Bảng mới
+  = bảng accounts_by_email đã có, đúng cấu trúc — bỏ qua
+  = bảng sessions đã có, đúng cấu trúc — bỏ qua
+  = bảng direct_conversations đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_state_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng users_by_name_token đã có, đúng cấu trúc — bỏ qua
+  = bảng reactions_by_message đã có, đúng cấu trúc — bỏ qua
+  = bảng attachments_by_conversation đã có, đúng cấu trúc — bỏ qua
+  = bảng hidden_messages_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng user_profiles đã có, đúng cấu trúc — bỏ qua
+  = bảng usernames đã có, đúng cấu trúc — bỏ qua
+  = bảng relationships đã có, đúng cấu trúc — bỏ qua
+  = bảng friend_requests_by_receiver đã có, đúng cấu trúc — bỏ qua
+  = bảng friend_requests_by_sender đã có, đúng cấu trúc — bỏ qua
+  = bảng friends_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng blocked_users_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng posts đã có, đúng cấu trúc — bỏ qua
+  = bảng posts_by_author đã có, đúng cấu trúc — bỏ qua
+  = bảng post_media đã có, đúng cấu trúc — bỏ qua
+  = bảng post_reactions đã có, đúng cấu trúc — bỏ qua
+  = bảng post_comments đã có, đúng cấu trúc — bỏ qua
+  = bảng public_posts_by_month đã có, đúng cấu trúc — bỏ qua
+  = bảng post_shares đã có, đúng cấu trúc — bỏ qua
+  = bảng notifications_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng notification_keys đã có, đúng cấu trúc — bỏ qua
+  = bảng message_terms_by_conversation đã có, đúng cấu trúc — bỏ qua
+  = bảng ai_summaries_by_conversation đã có, đúng cấu trúc — bỏ qua
+  = bảng ai_tasks_by_conversation đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_daily_stats đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_hourly_stats đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_type_stats đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_sender_stats đã có, đúng cấu trúc — bỏ qua
+  = bảng user_social_stats đã có, đúng cấu trúc — bỏ qua
+  = bảng root_comments_by_post đã có, đúng cấu trúc — bỏ qua
+  = bảng comment_replies_by_root đã có, đúng cấu trúc — bỏ qua
+  = bảng comment_client_ids đã có, đúng cấu trúc — bỏ qua
+  + sẽ tạo bảng pinned_messages_by_conversation
+
+(2) Cột mới trên bảng cũ
+  = cột users.email đã có — bỏ qua
+  = cột conversations.created_by đã có — bỏ qua
+  = cột conversations_by_user.last_sender_id đã có — bỏ qua
+  = cột messages_by_conversation.reply_to_id đã có — bỏ qua
+  = cột messages_by_conversation.reply_to_created_at đã có — bỏ qua
+  = cột messages_by_conversation.attachment_ids đã có — bỏ qua
+  = cột messages_by_conversation.forwarded đã có — bỏ qua
+  = cột messages_by_conversation.shared_post_id đã có — bỏ qua
+  = cột post_comments.reply_to_comment_id đã có — bỏ qua
+  = cột post_comments.root_comment_id đã có — bỏ qua
+
+(3) Backfill (chỉ ghi vào bảng mới)
+  direct_conversations: 9 hội thoại 1-1 -> sẽ ghi 0 dòng (IF NOT EXISTS), đã có 9
+  users_by_name_token: 9 người dùng -> ghi 0 dòng token, đã có 18
+  tìm kiếm / thống kê: 12 hội thoại, 477 tin -> ghi 0 dòng chỉ mục (đã có 3953), 0 lệnh cập nhật bộ đếm
+  luồng bình luận: 1 bài, 2 bình luận -> ghi 0 gốc, 0 phản hồi, đã có 2
+  thống kê mạng xã hội: 1 bài, 2 người dùng -> 0 lệnh cập nhật bộ đếm
+  public_posts_by_month / post_shares: 1 bài -> ghi 0 bài công khai, 0 lượt chia sẻ, đã có 1
+
+DRY RUN: kế hoạch có 1 lệnh ghi (không lệnh nào được gửi tới Cassandra). Không có lệnh xóa dữ liệu.

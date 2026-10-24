@@ -1,0 +1,7 @@
+node_modules
+frontend
+storage
+logs
+_backup
+backend/.env
+*.zip

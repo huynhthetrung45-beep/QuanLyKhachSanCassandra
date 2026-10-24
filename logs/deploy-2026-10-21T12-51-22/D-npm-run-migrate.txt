@@ -1,0 +1,44 @@
+
+> chatott@1.1.0 migrate
+> node backend/scripts/migrate.js
+
+Keyspace: chat_ott
+
+(1) Bảng mới
+  = bảng accounts_by_email đã có, đúng cấu trúc — bỏ qua
+  = bảng sessions đã có, đúng cấu trúc — bỏ qua
+  = bảng direct_conversations đã có, đúng cấu trúc — bỏ qua
+  = bảng conversation_state_by_user đã có, đúng cấu trúc — bỏ qua
+  = bảng users_by_name_token đã có, đúng cấu trúc — bỏ qua
+  + tạo bảng reactions_by_message
+  + tạo bảng attachments_by_conversation
+  + tạo bảng hidden_messages_by_user
+
+(2) Cột mới trên bảng cũ
+  = cột users.email đã có — bỏ qua
+  = cột conversations.created_by đã có — bỏ qua
+  = cột conversations_by_user.last_sender_id đã có — bỏ qua
+  + thêm cột messages_by_conversation.reply_to_id timeuuid  (dòng cũ = null)
+  + thêm cột messages_by_conversation.reply_to_created_at timestamp  (dòng cũ = null)
+  + thêm cột messages_by_conversation.attachment_ids list<uuid>  (dòng cũ = null)
+  + thêm cột messages_by_conversation.forwarded boolean  (dòng cũ = null)
+  ✓ tạo bảng reactions_by_message
+  ✓ tạo bảng attachments_by_conversation
+  ✓ tạo bảng hidden_messages_by_user
+  ✓ thêm cột messages_by_conversation.reply_to_id timeuuid
+  ✓ thêm cột messages_by_conversation.reply_to_created_at timestamp
+  ✓ thêm cột messages_by_conversation.attachment_ids list<uuid>
+  ✓ thêm cột messages_by_conversation.forwarded boolean
+
+(3) Backfill (chỉ ghi vào bảng mới)
+  direct_conversations: 8 hội thoại 1-1 -> mới 0, đã có 8
+  users_by_name_token: 9 người dùng -> ghi 0 dòng token, đã có 18
+
+(4) Kiểm tra lại cấu trúc sau migration: khớp thiết kế
+
+Đã thực thi 7 lệnh ghi. Không có lệnh xóa dữ liệu.
+
+[stderr]
+◇ injected env (0) from backend\.env
+
+[exit code] 0

@@ -22,3 +22,9 @@ Web.config
 
 # Astra Secure Connect Bundle
 Secure/
+# ChatOTT: tep tai len, khoa VAPID (Web Push), thu outbox, log trien khai - khong dua vao Git
+storage/
+logs/
+backend/.env
+node_modules/
+frontend/dist/

@@ -1,0 +1,615 @@
+{
+  "takenAt": "2026-10-23T05:53:17.269Z",
+  "keyspace": "chat_ott",
+  "replication": {
+    "class": "org.apache.cassandra.locator.SimpleStrategy",
+    "replication_factor": "1"
+  },
+  "tableOptions": {
+    "conversations": {
+      "default_time_to_live": 0,
+      "gc_grace_seconds": 864000,
+      "compaction": "org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy"
+    },
+    "conversations_by_user": {
+      "default_time_to_live": 0,
+      "gc_grace_seconds": 864000,
+      "compaction": "org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy"
+    },
+    "messages_by_conversation": {
+      "default_time_to_live": 0,
+      "gc_grace_seconds": 864000,
+      "compaction": "org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy"
+    },
+    "users": {
+      "default_time_to_live": 0,
+      "gc_grace_seconds": 864000,
+      "compaction": "org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy"
+    }
+  },
+  "oldColumns": {
+    "users": [
+      "avatar_url:text:regular:none",
+      "created_at:timestamp:regular:none",
+      "display_name:text:regular:none",
+      "email:text:regular:none",
+      "user_id:text:partition_key:none"
+    ],
+    "conversations": [
+      "conversation_id:uuid:partition_key:none",
+      "conversation_name:text:regular:none",
+      "conversation_type:text:regular:none",
+      "created_at:timestamp:regular:none",
+      "created_by:text:regular:none",
+      "last_message_at:timestamp:regular:none",
+      "participant_ids:set<text>:regular:none"
+    ],
+    "conversations_by_user": [
+      "conversation_id:uuid:clustering:asc",
+      "conversation_name:text:regular:none",
+      "conversation_type:text:regular:none",
+      "last_message_at:timestamp:clustering:desc",
+      "last_message_preview:text:regular:none",
+      "last_sender_id:text:regular:none",
+      "last_sender_name:text:regular:none",
+      "user_id:text:partition_key:none"
+    ],
+    "messages_by_conversation": [
+      "attachment_ids:list<uuid>:regular:none",
+      "content:text:regular:none",
+      "conversation_id:uuid:partition_key:none",
+      "created_at:timestamp:clustering:desc",
+      "deleted_at:timestamp:regular:none",
+      "forwarded:boolean:regular:none",
+      "is_deleted:boolean:regular:none",
+      "message_id:timeuuid:clustering:desc",
+      "message_type:text:regular:none",
+      "reply_to_created_at:timestamp:regular:none",
+      "reply_to_id:timeuuid:regular:none",
+      "sender_id:text:regular:none",
+      "sender_name:text:regular:none",
+      "shared_post_id:timeuuid:regular:none"
+    ]
+  },
+  "counts": {
+    "users": 9,
+    "conversations": 12,
+    "membershipRows": 32,
+    "messages": 477
+  },
+  "users": [
+    {
+      "user_id": "u_d09cebde496f4ed1bf85",
+      "display_name": "pham dung",
+      "avatar_url": null,
+      "created_at": 1792583940539
+    },
+    {
+      "user_id": "user01",
+      "display_name": "Nguyễn An",
+      "avatar_url": "https://i.pravatar.cc/150?img=1",
+      "created_at": 1792557216472
+    },
+    {
+      "user_id": "user02",
+      "display_name": "Trần Bình",
+      "avatar_url": "https://i.pravatar.cc/150?img=2",
+      "created_at": 1792557216481
+    },
+    {
+      "user_id": "user03",
+      "display_name": "Lê Chi",
+      "avatar_url": "https://i.pravatar.cc/150?img=3",
+      "created_at": 1792557216485
+    },
+    {
+      "user_id": "user04",
+      "display_name": "Phạm Dũng",
+      "avatar_url": "https://i.pravatar.cc/150?img=4",
+      "created_at": 1792557216488
+    },
+    {
+      "user_id": "user05",
+      "display_name": "Hoàng Giang",
+      "avatar_url": "https://i.pravatar.cc/150?img=5",
+      "created_at": 1792557216491
+    },
+    {
+      "user_id": "user06",
+      "display_name": "Vũ Huy",
+      "avatar_url": "https://i.pravatar.cc/150?img=6",
+      "created_at": 1792557216494
+    },
+    {
+      "user_id": "user07",
+      "display_name": "Đặng Linh",
+      "avatar_url": "https://i.pravatar.cc/150?img=7",
+      "created_at": 1792557216498
+    },
+    {
+      "user_id": "user08",
+      "display_name": "Bùi Minh",
+      "avatar_url": "https://i.pravatar.cc/150?img=8",
+      "created_at": 1792557217782
+    }
+  ],
+  "conversations": [
+    {
+      "conversation_id": "11111111-1111-1111-1111-111111111111",
+      "conversation_name": "Nhóm Đồ án NoSQL",
+      "conversation_type": "GROUP",
+      "participant_ids": [
+        "user01",
+        "user02",
+        "user03",
+        "user04",
+        "user05"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1792557387762
+    },
+    {
+      "conversation_id": "22222222-2222-2222-2222-222222222222",
+      "conversation_name": "Nhóm Backend",
+      "conversation_type": "GROUP",
+      "participant_ids": [
+        "user01",
+        "user02",
+        "user03",
+        "user06"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967293834
+    },
+    {
+      "conversation_id": "33333333-3333-3333-3333-333333333333",
+      "conversation_name": "Nhóm Frontend",
+      "conversation_type": "GROUP",
+      "participant_ids": [
+        "user02",
+        "user04",
+        "user05",
+        "user07",
+        "user08"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967293916
+    },
+    {
+      "conversation_id": "44444444-4444-4444-4444-444444444444",
+      "conversation_name": "Nguyễn An - Trần Bình",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user01",
+        "user02"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967293990
+    },
+    {
+      "conversation_id": "55555555-5555-5555-5555-555555555555",
+      "conversation_name": "Nguyễn An - Lê Chi",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user01",
+        "user03"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967294053
+    },
+    {
+      "conversation_id": "5614d56e-bda5-4732-a85b-140450b70043",
+      "conversation_name": "Phạm Dũng - Bùi Minh",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user04",
+        "user08"
+      ],
+      "last_message_at": 1792586505966,
+      "created_at": 1792586315827
+    },
+    {
+      "conversation_id": "66666666-6666-6666-6666-666666666666",
+      "conversation_name": "Phạm Dũng - Hoàng Giang",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user04",
+        "user05"
+      ],
+      "last_message_at": 1792588100924,
+      "created_at": 1789967294121
+    },
+    {
+      "conversation_id": "77777777-7777-7777-7777-777777777777",
+      "conversation_name": "Vũ Huy - Đặng Linh",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user06",
+        "user07"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967294188
+    },
+    {
+      "conversation_id": "88888888-8888-8888-8888-888888888888",
+      "conversation_name": "Bùi Minh - Nguyễn An",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user01",
+        "user08"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967294255
+    },
+    {
+      "conversation_id": "99999999-9999-9999-9999-999999999999",
+      "conversation_name": "Trần Bình - Phạm Dũng",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user02",
+        "user04"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967294331
+    },
+    {
+      "conversation_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      "conversation_name": "Lê Chi - Vũ Huy",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user03",
+        "user06"
+      ],
+      "last_message_at": 1792558993440,
+      "created_at": 1789967294452
+    },
+    {
+      "conversation_id": "c3269c2a-a049-41d0-8611-03ab6da7a00d",
+      "conversation_name": "Phạm Dũng - Đặng Linh",
+      "conversation_type": "DIRECT",
+      "participant_ids": [
+        "user04",
+        "user07"
+      ],
+      "last_message_at": 1792597737181,
+      "created_at": 1792588254187
+    }
+  ],
+  "membership": {
+    "u_d09cebde496f4ed1bf85": [],
+    "user01": [
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "11111111-1111-1111-1111-111111111111",
+        "conversation_name": "Nhóm Đồ án NoSQL",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Tiến độ hiện tại vẫn theo đúng kế hoạch.",
+        "last_sender_name": "Hoàng Giang"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "22222222-2222-2222-2222-222222222222",
+        "conversation_name": "Nhóm Backend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "44444444-4444-4444-4444-444444444444",
+        "conversation_name": "Nguyễn An - Trần Bình",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "55555555-5555-5555-5555-555555555555",
+        "conversation_name": "Nguyễn An - Lê Chi",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Lê Chi"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "88888888-8888-8888-8888-888888888888",
+        "conversation_name": "Bùi Minh - Nguyễn An",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Nguyễn An"
+      }
+    ],
+    "user02": [
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "11111111-1111-1111-1111-111111111111",
+        "conversation_name": "Nhóm Đồ án NoSQL",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Tiến độ hiện tại vẫn theo đúng kế hoạch.",
+        "last_sender_name": "Hoàng Giang"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "22222222-2222-2222-2222-222222222222",
+        "conversation_name": "Nhóm Backend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "33333333-3333-3333-3333-333333333333",
+        "conversation_name": "Nhóm Frontend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Bùi Minh"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "44444444-4444-4444-4444-444444444444",
+        "conversation_name": "Nguyễn An - Trần Bình",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "99999999-9999-9999-9999-999999999999",
+        "conversation_name": "Trần Bình - Phạm Dũng",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Phạm Dũng"
+      }
+    ],
+    "user03": [
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "11111111-1111-1111-1111-111111111111",
+        "conversation_name": "Nhóm Đồ án NoSQL",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Tiến độ hiện tại vẫn theo đúng kế hoạch.",
+        "last_sender_name": "Hoàng Giang"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "22222222-2222-2222-2222-222222222222",
+        "conversation_name": "Nhóm Backend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "55555555-5555-5555-5555-555555555555",
+        "conversation_name": "Nguyễn An - Lê Chi",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Lê Chi"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "conversation_name": "Lê Chi - Vũ Huy",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Vũ Huy"
+      }
+    ],
+    "user04": [
+      {
+        "last_message_at": 1792597737181,
+        "conversation_id": "c3269c2a-a049-41d0-8611-03ab6da7a00d",
+        "conversation_name": "Phạm Dũng - Đặng Linh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "[Tệp] ChatOTT_Dac_ta_mo_rong_6_huong_va_mang_xa_ho…",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792588100924,
+        "conversation_id": "66666666-6666-6666-6666-666666666666",
+        "conversation_name": "Phạm Dũng - Hoàng Giang",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "[Tệp] Ke_hoach_ChatOTT_De_tai_09_Dang_nhap_Dang_ky…",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792586505966,
+        "conversation_id": "5614d56e-bda5-4732-a85b-140450b70043",
+        "conversation_name": "Phạm Dũng - Bùi Minh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "chào minh",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "11111111-1111-1111-1111-111111111111",
+        "conversation_name": "Nhóm Đồ án NoSQL",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Tiến độ hiện tại vẫn theo đúng kế hoạch.",
+        "last_sender_name": "Hoàng Giang"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "33333333-3333-3333-3333-333333333333",
+        "conversation_name": "Nhóm Frontend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Bùi Minh"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "99999999-9999-9999-9999-999999999999",
+        "conversation_name": "Trần Bình - Phạm Dũng",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Phạm Dũng"
+      }
+    ],
+    "user05": [
+      {
+        "last_message_at": 1792588100924,
+        "conversation_id": "66666666-6666-6666-6666-666666666666",
+        "conversation_name": "Phạm Dũng - Hoàng Giang",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "[Tệp] Ke_hoach_ChatOTT_De_tai_09_Dang_nhap_Dang_ky…",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "11111111-1111-1111-1111-111111111111",
+        "conversation_name": "Nhóm Đồ án NoSQL",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Tiến độ hiện tại vẫn theo đúng kế hoạch.",
+        "last_sender_name": "Hoàng Giang"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "33333333-3333-3333-3333-333333333333",
+        "conversation_name": "Nhóm Frontend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Bùi Minh"
+      }
+    ],
+    "user06": [
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "22222222-2222-2222-2222-222222222222",
+        "conversation_name": "Nhóm Backend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Trần Bình"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "77777777-7777-7777-7777-777777777777",
+        "conversation_name": "Vũ Huy - Đặng Linh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Đặng Linh"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "conversation_name": "Lê Chi - Vũ Huy",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Vũ Huy"
+      }
+    ],
+    "user07": [
+      {
+        "last_message_at": 1792597737181,
+        "conversation_id": "c3269c2a-a049-41d0-8611-03ab6da7a00d",
+        "conversation_name": "Phạm Dũng - Đặng Linh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "[Tệp] ChatOTT_Dac_ta_mo_rong_6_huong_va_mang_xa_ho…",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "33333333-3333-3333-3333-333333333333",
+        "conversation_name": "Nhóm Frontend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Bùi Minh"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "77777777-7777-7777-7777-777777777777",
+        "conversation_name": "Vũ Huy - Đặng Linh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Đặng Linh"
+      }
+    ],
+    "user08": [
+      {
+        "last_message_at": 1792586505966,
+        "conversation_id": "5614d56e-bda5-4732-a85b-140450b70043",
+        "conversation_name": "Phạm Dũng - Bùi Minh",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "chào minh",
+        "last_sender_name": "Phạm Dũng"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "33333333-3333-3333-3333-333333333333",
+        "conversation_name": "Nhóm Frontend",
+        "conversation_type": "GROUP",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Bùi Minh"
+      },
+      {
+        "last_message_at": 1792558993440,
+        "conversation_id": "88888888-8888-8888-8888-888888888888",
+        "conversation_name": "Bùi Minh - Nguyễn An",
+        "conversation_type": "DIRECT",
+        "last_message_preview": "Mình đang kiểm tra lại API.",
+        "last_sender_name": "Nguyễn An"
+      }
+    ]
+  },
+  "messages": {
+    "11111111-1111-1111-1111-111111111111": {
+      "count": 202,
+      "recalled": 10,
+      "sha256": "a1bf7d21ced2359aee9510ed6fded61aa35b656403a06d06b77ac226b10d3bb6"
+    },
+    "22222222-2222-2222-2222-222222222222": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "3cf8deb76db4a621b94d359aba70a2415828ead9f202963d944d699f93bcfb56"
+    },
+    "33333333-3333-3333-3333-333333333333": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "e65885e170aaad31fbba94bcf44c475fa2f3996609f79d585710e04876b2130f"
+    },
+    "44444444-4444-4444-4444-444444444444": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "7e86a98cb48f6561832975c5e8c3b8fb165c9dcefcb7f85bcc63522fcf242466"
+    },
+    "55555555-5555-5555-5555-555555555555": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "dbae41331f898a7fecbeb0e027a764b630d5990aa1eb0b7ff65a0f2245c53071"
+    },
+    "5614d56e-bda5-4732-a85b-140450b70043": {
+      "count": 1,
+      "recalled": 0,
+      "sha256": "a64ede2f3b9acf03e1e9486e00ef505eaa1dbc33e2e400dec9b3d2af184c3ff2"
+    },
+    "66666666-6666-6666-6666-666666666666": {
+      "count": 31,
+      "recalled": 2,
+      "sha256": "a4c59fd14f613bd17e0af9552e62cc1dcd91f17fbf4ba40410b617ccd727224d"
+    },
+    "77777777-7777-7777-7777-777777777777": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "f5f8347c5c82586b8c8f2f9e6989aed00b9368357513cba26f0df01e845e5bb3"
+    },
+    "88888888-8888-8888-8888-888888888888": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "4701174cc9818055f498bb4cdf9d6a5a63841a972bcf20828df9572606dc3b94"
+    },
+    "99999999-9999-9999-9999-999999999999": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "4cf9d3b17ac8a2e91c89d4494c9b16e5cd7da5be987f07539bca18615059e5d1"
+    },
+    "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa": {
+      "count": 30,
+      "recalled": 2,
+      "sha256": "e7824118c17b73e7fa7f4e154c3a5700b059464c44e7dae52cd4b918f41fbbd7"
+    },
+    "c3269c2a-a049-41d0-8611-03ab6da7a00d": {
+      "count": 3,
+      "recalled": 0,
+      "sha256": "952c2a1d6cc218d400f2c04de629345bc20844d58c4eefc62576bebe611020d5"
+    }
+  }
+}

@@ -1,0 +1,291 @@
+
+ table_name
+-----------------------------
+           accounts_by_email
+ attachments_by_conversation
+       blocked_users_by_user
+  conversation_state_by_user
+               conversations
+       conversations_by_user
+        direct_conversations
+ friend_requests_by_receiver
+   friend_requests_by_sender
+             friends_by_user
+     hidden_messages_by_user
+    messages_by_conversation
+               post_comments
+                  post_media
+              post_reactions
+                       posts
+             posts_by_author
+        reactions_by_message
+               relationships
+                    sessions
+               user_profiles
+                   usernames
+                       users
+         users_by_name_token
+
+(24 rows)
+
+ table_name      | column_name    | kind          | position | clustering_order | type
+-----------------+----------------+---------------+----------+------------------+----------------
+   post_comments |      author_id |       regular |       -1 |             none |           text
+   post_comments |     comment_id |    clustering |        0 |              asc |       timeuuid
+   post_comments |        content |       regular |       -1 |             none |           text
+   post_comments |     created_at |       regular |       -1 |             none |      timestamp
+   post_comments |     is_deleted |       regular |       -1 |             none |        boolean
+   post_comments |        post_id | partition_key |        0 |             none |       timeuuid
+   post_comments |     updated_at |       regular |       -1 |             none |      timestamp
+      post_media |     created_at |       regular |       -1 |             none |      timestamp
+      post_media |      file_name |       regular |       -1 |             none |           text
+      post_media |       media_id | partition_key |        0 |             none |       timeuuid
+      post_media |      mime_type |       regular |       -1 |             none |           text
+      post_media |       owner_id |       regular |       -1 |             none |           text
+      post_media |        post_id |       regular |       -1 |             none |       timeuuid
+      post_media |         sha256 |       regular |       -1 |             none |           text
+      post_media |     size_bytes |       regular |       -1 |             none |         bigint
+      post_media |         status |       regular |       -1 |             none |           text
+      post_media |    storage_key |       regular |       -1 |             none |           text
+  post_reactions |        post_id | partition_key |        0 |             none |       timeuuid
+  post_reactions |     reacted_at |       regular |       -1 |             none |      timestamp
+  post_reactions |       reaction |       regular |       -1 |             none |           text
+  post_reactions |        user_id |    clustering |        0 |              asc |           text
+           posts |      author_id |       regular |       -1 |             none |           text
+           posts |        content |       regular |       -1 |             none |           text
+           posts |     created_at |       regular |       -1 |             none |      timestamp
+           posts |     is_deleted |       regular |       -1 |             none |        boolean
+           posts |      media_ids |       regular |       -1 |             none | list<timeuuid>
+           posts |        post_id | partition_key |        0 |             none |       timeuuid
+           posts |        privacy |       regular |       -1 |             none |           text
+           posts | shared_post_id |       regular |       -1 |             none |       timeuuid
+           posts |     updated_at |       regular |       -1 |             none |      timestamp
+ posts_by_author |      author_id | partition_key |        0 |             none |           text
+ posts_by_author |        post_id |    clustering |        0 |             desc |       timeuuid
+
+(32 rows)
+
+ column_name    | kind    | type
+----------------+---------+----------
+ shared_post_id | regular | timeuuid
+
+(1 rows)
+
+ column_name         | kind          | position | clustering_order | type
+---------------------+---------------+----------+------------------+------------
+      attachment_ids |       regular |       -1 |             none | list<uuid>
+             content |       regular |       -1 |             none |       text
+     conversation_id | partition_key |        0 |             none |       uuid
+          created_at |    clustering |        0 |             desc |  timestamp
+          deleted_at |       regular |       -1 |             none |  timestamp
+           forwarded |       regular |       -1 |             none |    boolean
+          is_deleted |       regular |       -1 |             none |    boolean
+          message_id |    clustering |        1 |             desc |   timeuuid
+        message_type |       regular |       -1 |             none |       text
+ reply_to_created_at |       regular |       -1 |             none |  timestamp
+         reply_to_id |       regular |       -1 |             none |   timeuuid
+           sender_id |       regular |       -1 |             none |       text
+         sender_name |       regular |       -1 |             none |       text
+      shared_post_id |       regular |       -1 |             none |   timeuuid
+
+(14 rows)
+
+ keyspace_name | replication
+---------------+-------------------------------------------------------------------------------------
+      chat_ott | {'class': 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1'}
+
+(1 rows)
+
+ table_name               | compaction                                                                                                                | default_time_to_live | gc_grace_seconds
+--------------------------+---------------------------------------------------------------------------------------------------------------------------+----------------------+------------------
+            conversations | {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'} |                    0 |           864000
+    conversations_by_user | {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'} |                    0 |           864000
+ messages_by_conversation | {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'} |                    0 |           864000
+                    users | {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'} |                    0 |           864000
+
+(4 rows)
+
+ user_id                | display_name
+------------------------+--------------
+                 user05 |  Hoàng Giang
+ u_d09cebde496f4ed1bf85 |    pham dung
+                 user01 |    Nguyễn An
+                 user03 |       Lê Chi
+                 user04 |    Phạm Dũng
+                 user08 |     Bùi Minh
+                 user02 |    Trần Bình
+                 user06 |       Vũ Huy
+                 user07 |    Đặng Linh
+
+(9 rows)
+
+ conversation_id                      | conversation_type | last_message_at
+--------------------------------------+-------------------+---------------------------------
+ c3269c2a-a049-41d0-8611-03ab6da7a00d |            DIRECT | 2026-10-21 15:48:57.181000+0000
+ 5614d56e-bda5-4732-a85b-140450b70043 |            DIRECT | 2026-10-21 12:41:45.966000+0000
+ aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 77777777-7777-7777-7777-777777777777 |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 66666666-6666-6666-6666-666666666666 |            DIRECT | 2026-10-21 13:08:20.924000+0000
+ 99999999-9999-9999-9999-999999999999 |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 22222222-2222-2222-2222-222222222222 |             GROUP | 2026-10-21 05:03:13.440000+0000
+ 44444444-4444-4444-4444-444444444444 |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 55555555-5555-5555-5555-555555555555 |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 88888888-8888-8888-8888-888888888888 |            DIRECT | 2026-10-21 05:03:13.440000+0000
+ 11111111-1111-1111-1111-111111111111 |             GROUP | 2026-10-21 05:03:13.440000+0000
+ 33333333-3333-3333-3333-333333333333 |             GROUP | 2026-10-21 05:03:13.440000+0000
+
+(12 rows)
+
+ user01
+--------
+      5
+
+(1 rows)
+
+ user02
+--------
+      5
+
+(1 rows)
+
+ user03
+--------
+      4
+
+(1 rows)
+
+ user04
+--------
+      6
+
+(1 rows)
+
+ user05
+--------
+      3
+
+(1 rows)
+
+ user06
+--------
+      3
+
+(1 rows)
+
+ user07
+--------
+      3
+
+(1 rows)
+
+ user08
+--------
+      3
+
+(1 rows)
+
+ c1111
+-------
+   202
+
+(1 rows)
+
+ c2222
+-------
+    30
+
+(1 rows)
+
+ c3333
+-------
+    30
+
+(1 rows)
+
+ c4444
+-------
+    30
+
+(1 rows)
+
+ c5555
+-------
+    30
+
+(1 rows)
+
+ c6666
+-------
+    31
+
+(1 rows)
+
+ c7777
+-------
+    30
+
+(1 rows)
+
+ c8888
+-------
+    30
+
+(1 rows)
+
+ c9999
+-------
+    30
+
+(1 rows)
+
+ caaaa
+-------
+    30
+
+(1 rows)
+
+ created_at                      | message_id                           | sender_name | is_deleted
+---------------------------------+--------------------------------------+-------------+------------
+ 2026-10-21 05:23:36.020000+0000 | 90a60940-cd0f-11f1-9d4e-3fb31541dc8f |   Nguyễn An |       True
+ 2026-10-21 05:12:19.437000+0000 | fd5fd0e0-cd0d-11f1-a17a-e111fe7c883f |   Nguyễn An |       True
+ 2026-10-21 05:03:13.440000+0000 | 6af0a220-cd0d-11f1-992b-79e38492ff40 | Hoàng Giang |      False
+
+(3 rows)
+
+ conversation_id                      | last_message_at
+--------------------------------------+---------------------------------
+ 11111111-1111-1111-1111-111111111111 | 2026-10-21 05:03:13.440000+0000
+
+(1 rows)
+
+ last_message_at                 | conversation_id                      | last_message_preview
+---------------------------------+--------------------------------------+------------------------------------------
+ 2026-10-21 05:03:13.440000+0000 | 11111111-1111-1111-1111-111111111111 | Tiến độ hiện tại vẫn theo đúng kế hoạch.
+ 2026-10-21 05:03:13.440000+0000 | 22222222-2222-2222-2222-222222222222 |              Mình đang kiểm tra lại API.
+ 2026-10-21 05:03:13.440000+0000 | 44444444-4444-4444-4444-444444444444 |              Mình đang kiểm tra lại API.
+ 2026-10-21 05:03:13.440000+0000 | 55555555-5555-5555-5555-555555555555 |              Mình đang kiểm tra lại API.
+ 2026-10-21 05:03:13.440000+0000 | 88888888-8888-8888-8888-888888888888 |              Mình đang kiểm tra lại API.
+
+(5 rows)
+
+ created_at                      | shared_post_id
+---------------------------------+----------------
+ 2026-10-21 05:23:36.020000+0000 |           null
+ 2026-10-21 05:12:19.437000+0000 |           null
+ 2026-10-21 05:03:13.440000+0000 |           null
+
+(3 rows)
+
+ post_id
+---------
+
+
+(0 rows)
+
+ post_id
+---------
+
+
+(0 rows)
+
+[exit code] 0

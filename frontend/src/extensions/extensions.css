@@ -1,0 +1,223 @@
+/* ChatOTT - giao dien cac chuc nang moi (PT-01..PT-26) + che do toi + man hinh dien thoai (NFR-17). */
+
+/* ===== Chung ===== */
+.avatar { overflow: hidden; }
+.avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.ext-input {
+  width: 100%; min-height: 38px; padding: 8px 11px; border: 1px solid var(--line-strong); border-radius: var(--radius-m);
+  background: var(--paper); color: var(--text); font-size: 14.5px;
+}
+.ext-input:focus { outline: 2px solid var(--focus); outline-offset: 0; border-color: transparent; }
+.ext-textarea { resize: vertical; min-height: 72px; font-family: inherit; }
+.ext-short { max-width: 130px; }
+.ext-select { width: auto; min-height: 30px; padding: 4px 8px; font-size: 13px; }
+.ext-code { text-align: center; font-size: 26px; letter-spacing: 10px; margin: 12px 0; }
+.ext-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.ext-row.wrap { flex-wrap: wrap; }
+.ext-col { display: flex; flex-direction: column; gap: 6px; }
+.ext-grow { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ext-sub { display: block; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.ext-note { font-size: 12.5px; margin-top: 6px; }
+.ext-form { display: flex; flex-direction: column; gap: 9px; }
+.ext-ok { color: #1c8a4a; }
+.ext-warn { color: #b76e00; }
+.ext-badge { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; padding: 1px 7px; border-radius: 99px; font-size: 11.5px; background: var(--teal-wash); color: var(--teal-deep); font-weight: 600; }
+.ext-badge.role-owner { background: #fff1d6; color: #9a6100; }
+.ext-badge.danger { background: var(--danger-wash); color: var(--danger); }
+.ext-list li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.ext-list li:last-child { border-bottom: 0; }
+.ext-card { padding: 16px 18px; margin-bottom: 14px; }
+.ext-card-title { display: flex; align-items: center; gap: 8px; font-size: 15.5px; font-weight: 600; margin-bottom: 10px; }
+.ext-tabs { margin-bottom: 14px; padding: 0; background: transparent; }
+.ext-tabs button { display: inline-flex; align-items: center; gap: 5px; }
+.ext-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--line-strong); background: var(--paper); font-size: 13px; cursor: pointer; }
+.ext-chip.on { border-color: var(--teal); background: var(--teal-wash); color: var(--teal-deep); }
+.ext-chip input { display: none; }
+.ext-reasons { display: flex; flex-wrap: wrap; gap: 7px; }
+.ext-check { display: flex; align-items: center; gap: 7px; font-size: 14px; margin: 6px 0; }
+.ext-quote { padding: 8px 12px; border-left: 3px solid var(--line-strong); background: var(--chat-bg); border-radius: 0 var(--radius-s) var(--radius-s) 0; white-space: pre-wrap; margin: 8px 0; }
+.ext-translation { white-space: pre-wrap; padding: 10px 12px; background: var(--teal-wash); border-radius: var(--radius-m); }
+.ext-secret { display: block; padding: 10px; font-size: 16px; letter-spacing: 1px; background: var(--chat-bg); border-radius: var(--radius-s); margin: 6px 0; user-select: all; overflow-wrap: anywhere; }
+.ext-dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin-bottom: 12px; font-size: 14px; }
+.ext-dl dt { color: var(--muted); }
+.ext-dl dd { margin: 0; overflow-wrap: anywhere; }
+.ext-wide { max-width: 960px; }
+.ext-forgot { text-align: right; margin: -4px 0 12px; font-size: 13.5px; }
+.ext-report-user { margin-top: 8px; }
+.switch { cursor: pointer; border: 0; }
+
+/* ===== Man hinh chan / dat lai mat khau ===== */
+.ext-gate { min-height: 100%; display: grid; place-items: center; padding: 16px; background: var(--chat-bg); overflow: auto; }
+.ext-gate-card { width: min(420px, 100%); }
+.ext-gate-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--teal-wash); color: var(--teal-deep); margin-bottom: 12px; }
+.ext-show { display: flex !important; }
+
+/* ===== Cat anh ===== */
+.ext-cropper { max-width: 380px; }
+.ext-crop-box { position: relative; overflow: hidden; margin: 0 auto; background: #222; cursor: grab; touch-action: none; border-radius: var(--radius-m); display: grid; place-items: center; color: #fff; }
+.ext-crop-box.round { border-radius: 50%; }
+.ext-crop-box img { position: absolute; left: 0; top: 0; max-width: none; user-select: none; pointer-events: none; }
+.ext-zoom { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13.5px; }
+.ext-zoom input { flex: 1; }
+
+/* ===== Chat: thanh cong cu, sticker, binh chon, link, nhac ten ===== */
+.ext-bar { position: relative; display: flex; align-items: center; gap: 2px; padding: 4px 14px 0; flex-wrap: wrap; }
+.ext-bar .icon-btn.on { color: var(--teal-deep); background: var(--teal-wash); }
+.ext-pop { position: absolute; bottom: calc(100% + 4px); left: 12px; z-index: 30; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); box-shadow: var(--shadow-pop); padding: 10px; }
+.ext-stickers { display: grid; grid-template-columns: repeat(4, 76px); gap: 6px; max-height: 300px; overflow: auto; }
+.ext-stickers button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border: 0; background: transparent; border-radius: var(--radius-m); }
+.ext-stickers button:hover { background: var(--chat-bg); }
+.ext-stickers span { font-size: 34px; line-height: 1.1; }
+.ext-stickers small { font-size: 11px; color: var(--text-2); }
+.ext-voice { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.ext-rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); animation: ext-blink 1s infinite; }
+.ext-rec-time { font-variant-numeric: tabular-nums; }
+@keyframes ext-blink { 50% { opacity: .25; } }
+.ext-suggest { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: 6px; }
+.ext-suggest .ext-chip { border-style: dashed; }
+.ext-mention-pop { position: absolute; bottom: calc(100% + 2px); left: 56px; z-index: 30; min-width: 220px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); box-shadow: var(--shadow-pop); padding: 4px; }
+.composer-wrap { position: relative; }
+.ext-mention-pop button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border: 0; background: transparent; border-radius: var(--radius-s); text-align: left; }
+.ext-mention-pop button.on, .ext-mention-pop button:hover { background: var(--teal-wash); }
+.ext-sticker { display: flex; flex-direction: column; align-items: center; padding: 2px 8px; }
+.ext-sticker-emoji { font-size: 64px; line-height: 1.1; }
+.ext-sticker-label { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.ext-poll { min-width: min(280px, 64vw); }
+.ext-poll-q { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.ext-poll li { margin-bottom: 6px; }
+.ext-poll-opt { position: relative; display: flex; align-items: center; width: 100%; min-height: 36px; padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: var(--radius-m); background: var(--paper); overflow: hidden; text-align: left; }
+.ext-poll-opt.mine { border-color: var(--teal); }
+.ext-poll-bar { position: absolute; inset: 0 auto 0 0; background: var(--teal-wash); transition: width .3s; }
+.ext-poll-text, .ext-poll-count { position: relative; }
+.ext-poll-text { flex: 1; display: inline-flex; align-items: center; gap: 5px; }
+.ext-poll-count { font-weight: 600; margin-left: 8px; }
+.ext-poll-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+.ext-link { display: flex; gap: 10px; margin-top: 6px; padding: 8px; border-radius: var(--radius-m); background: rgba(0, 0, 0, .04); color: inherit; text-decoration: none; max-width: 360px; }
+.ext-link img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-s); flex: none; }
+.ext-link-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13px; }
+.ext-link-site { color: var(--muted); font-size: 11.5px; display: inline-flex; align-items: center; gap: 3px; }
+.ext-link-desc { color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ext-mention-badge { display: inline-flex; align-items: center; gap: 3px; margin-top: 4px; font-size: 11.5px; color: var(--teal-deep); font-weight: 600; }
+.ext-edited { display: block; font-size: 11px; color: var(--muted); font-style: italic; margin-top: 2px; }
+.ext-audio { display: block; width: min(280px, 62vw); height: 40px; margin: 2px 0; }
+
+/* ===== Bai viet: hashtag, luu ===== */
+.ext-post-extras { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 0 16px 6px; }
+.ext-post-extras .icon-btn.on { color: var(--teal-deep); }
+.ext-hashtag { border: 0; background: transparent; color: var(--teal-deep); font-weight: 600; padding: 0; font-size: 14px; }
+.ext-hashtag:hover { text-decoration: underline; }
+.ext-hashtag-head .posts-title { margin: 0; }
+.profile-cover { background-size: cover; background-position: center; }
+
+/* ===== Story ===== */
+.ext-stories { display: flex; gap: 12px; padding: 12px 14px; margin-bottom: 14px; overflow-x: auto; align-items: center; }
+.ext-story-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; background: transparent; font-size: 12px; width: 70px; flex: none; }
+.ext-story-tile > span:last-child { max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ext-story-ring { position: relative; padding: 3px; border-radius: 50%; background: linear-gradient(135deg, #0f8f87, #f0a020); }
+.ext-story-ring .avatar { border: 2px solid var(--paper); }
+.ext-story-ring.seen { background: var(--line-strong); }
+.ext-story-tile.add .ext-story-ring { background: var(--line); }
+.ext-story-plus { position: absolute; right: -2px; bottom: -2px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--teal); color: #fff; border: 2px solid var(--paper); }
+.bg-teal { background: linear-gradient(135deg, #0f8f87, #16324f); }
+.bg-harbor { background: linear-gradient(135deg, #16324f, #2f8fd6); }
+.bg-sunset { background: linear-gradient(135deg, #f0a020, #c4413a); }
+.bg-violet { background: linear-gradient(135deg, #6d3fc4, #c43fa5); }
+.bg-forest { background: linear-gradient(135deg, #1c8a4a, #0b4f3a); }
+.bg-rose { background: linear-gradient(135deg, #e86a92, #f7b267); }
+.ext-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; }
+.ext-swatch.on { border-color: var(--text); }
+.ext-story-compose { max-width: 420px; }
+.ext-story-canvas { position: relative; height: 320px; border-radius: var(--radius-m); overflow: hidden; display: grid; place-items: center; margin-bottom: 8px; }
+.ext-story-canvas img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ext-story-canvas textarea { position: relative; width: 86%; background: transparent; border: 0; color: #fff; font-size: 22px; font-weight: 600; text-align: center; resize: none; text-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
+.ext-story-canvas textarea::placeholder { color: rgba(255, 255, 255, .75); }
+.ext-story-viewer { position: fixed; inset: 0; z-index: 200; background: rgba(0, 0, 0, .92); display: grid; place-items: center; }
+.ext-story-stage { position: relative; width: min(420px, 100vw); height: min(760px, 100dvh); border-radius: 12px; overflow: hidden; display: grid; place-items: center; color: #fff; }
+.ext-story-progress { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 4px; z-index: 2; }
+.ext-story-progress span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .35); position: relative; overflow: hidden; }
+.ext-story-progress span.done { background: #fff; }
+.ext-story-progress span.now::after { content: ''; position: absolute; inset: 0; background: #fff; transform-origin: left; animation: ext-progress linear forwards; animation-duration: inherit; }
+.ext-story-progress span.now.paused::after { animation-play-state: paused; }
+@keyframes ext-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ext-story-head { position: absolute; top: 18px; left: 10px; right: 10px; display: flex; align-items: center; gap: 8px; z-index: 2; font-size: 13px; }
+.ext-story-head .icon-btn { color: #fff; }
+.ext-story-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ext-story-text { position: relative; z-index: 1; padding: 0 24px; font-size: 24px; font-weight: 600; text-align: center; white-space: pre-wrap; text-shadow: 0 1px 6px rgba(0, 0, 0, .55); }
+.ext-story-text.over { position: absolute; bottom: 60px; font-size: 18px; }
+.ext-story-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; border: 0; background: rgba(0, 0, 0, .25); color: #fff; border-radius: 50%; width: 42px; height: 42px; display: grid; place-items: center; }
+.ext-story-nav.prev { left: 8px; }
+.ext-story-nav.next { right: 8px; }
+.ext-story-viewers { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--paper); color: var(--text); padding: 14px; max-height: 50%; overflow: auto; border-radius: 12px 12px 0 0; }
+.ext-story-viewers li { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+
+/* ===== Goi y ket ban ===== */
+.ext-suggestions { padding: 0 16px 8px; }
+.ext-sug { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.ext-sug-main { flex: 1; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; text-align: left; min-width: 0; }
+
+/* ===== Quan tri ===== */
+.ext-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.ext-kpis > div { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-m); padding: 12px; display: flex; flex-direction: column; }
+.ext-kpis strong { font-size: 24px; }
+.ext-kpis span { color: var(--muted); font-size: 13px; }
+.ext-bars { display: flex; align-items: flex-end; gap: 6px; height: 180px; padding-top: 18px; }
+.ext-bar-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 3px; min-width: 0; }
+.ext-bar-fill { width: 100%; max-width: 34px; background: var(--teal); border-radius: 4px 4px 0 0; min-height: 2px; }
+.ext-bar-val { font-size: 11px; color: var(--text-2); }
+.ext-bar-lbl { font-size: 10.5px; color: var(--muted); }
+.ext-report .ext-quote { margin: 6px 0; }
+.ext-table { width: 100%; border-collapse: collapse; font-size: 13px; overflow: hidden; }
+.ext-table th, .ext-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ext-table th { background: var(--chat-bg); font-weight: 600; }
+
+/* ===== Che do toi (NFR-17) ===== */
+:root[data-theme='dark'] {
+  --harbor: #0c1822;
+  --harbor-2: #142636;
+  --teal: #19a99f;
+  --teal-deep: #5fd3c9;
+  --teal-wash: #12332f;
+  --bubble-mine: #164a44;
+  --paper: #16222c;
+  --chat-bg: #0f1820;
+  --line: #24333f;
+  --line-strong: #33475a;
+  --text: #e2eaf0;
+  --text-2: #b4c3cd;
+  --muted: #8396a3;
+  --danger: #ef6b62;
+  --danger-wash: #3a1d1c;
+  --warn-wash: #3a2f15;
+  --ok-wash: #15331f;
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, .5), 0 2px 6px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+:root[data-theme='dark'] body { background: var(--chat-bg); }
+:root[data-theme='dark'] .menu-item:hover,
+:root[data-theme='dark'] .btn.secondary:hover:not(:disabled),
+:root[data-theme='dark'] .tile:hover svg,
+:root[data-theme='dark'] .tile svg { background: #1e2d39; }
+:root[data-theme='dark'] .info-section { border-bottom-color: #0f1820; }
+:root[data-theme='dark'] .bubble { color: var(--text); }
+:root[data-theme='dark'] .ext-link { background: rgba(255, 255, 255, .06); }
+:root[data-theme='dark'] .ext-badge.role-owner { background: #3a2f15; color: #f3c46b; }
+:root[data-theme='dark'] .auth-page, :root[data-theme='dark'] .auth-panel, :root[data-theme='dark'] .auth-card { background: var(--paper); color: var(--text); }
+:root[data-theme='dark'] input, :root[data-theme='dark'] textarea, :root[data-theme='dark'] select { background-color: var(--paper); color: var(--text); }
+
+/* ===== Dien thoai >= 360px (NFR-17) ===== */
+@media (max-width: 640px) {
+  .ext-stickers { grid-template-columns: repeat(4, 64px); }
+  .ext-dl { grid-template-columns: 1fr; }
+  .ext-row { flex-wrap: wrap; }
+  .ext-table { display: block; overflow-x: auto; }
+  .ext-card { padding: 12px; }
+  .ext-kpis { grid-template-columns: repeat(2, 1fr); }
+  .ext-bar { padding: 4px 8px 0; }
+  .dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow: auto; }
+  .ext-mention-pop { left: 8px; right: 8px; min-width: 0; }
+}
+@media (max-width: 420px) {
+  .rail { overflow-x: auto; }
+  .ext-story-tile { width: 60px; }
+}
+.ext-qr { display: block; margin: 8px 0; padding: 8px; background: #fff; border-radius: var(--radius-m); }

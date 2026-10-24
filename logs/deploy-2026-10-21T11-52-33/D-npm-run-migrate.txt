@@ -1,0 +1,38 @@
+
+> chatott@1.1.0 migrate
+> node backend/scripts/migrate.js
+
+Keyspace: chat_ott
+
+(1) Bảng mới
+  + sẽ tạo bảng accounts_by_email
+  + sẽ tạo bảng sessions
+  + sẽ tạo bảng direct_conversations
+  + sẽ tạo bảng conversation_state_by_user
+  + sẽ tạo bảng users_by_name_token
+
+(2) Cột mới trên bảng cũ
+  + sẽ thêm cột users.email text  (dòng cũ = null)
+  + sẽ thêm cột conversations.created_by text  (dòng cũ = null)
+  + sẽ thêm cột conversations_by_user.last_sender_id text  (dòng cũ = null)
+  ✓ tạo bảng accounts_by_email
+  ✓ tạo bảng sessions
+  ✓ tạo bảng direct_conversations
+  ✓ tạo bảng conversation_state_by_user
+  ✓ tạo bảng users_by_name_token
+  ✓ thêm cột users.email text
+  ✓ thêm cột conversations.created_by text
+  ✓ thêm cột conversations_by_user.last_sender_id text
+
+(3) Backfill (chỉ ghi vào bảng mới)
+  direct_conversations: 7 hội thoại 1-1 -> mới 7, đã có 0
+  users_by_name_token: 8 người dùng -> 16 dòng token
+
+(4) Kiểm tra lại cấu trúc sau migration: khớp thiết kế
+
+Đã thực thi 31 lệnh ghi. Không có lệnh xóa dữ liệu.
+
+[stderr]
+◇ injected env (0) from backend\.env
+
+[exit code] 0

@@ -1,0 +1,17 @@
+{
+  "code": 1,
+  "results": [
+    {
+      "stage": "A",
+      "name": "Đúng thư mục dự án và đủ script",
+      "ok": true,
+      "detail": "package chatott, migration mới nhất 008, kiểm tra db/verify-008-before.cql / db/verify-008-after.cql"
+    },
+    {
+      "stage": "A",
+      "name": "Container chatott-cassandra đang chạy",
+      "ok": false,
+      "detail": "failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified."
+    }
+  ]
+}
