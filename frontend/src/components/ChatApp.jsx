@@ -210,6 +210,11 @@ export default function ChatApp({ user, onLogout, onUserChanged }) {
       openConversation(n.conversationId);
     } else if (n.type === 'FRIEND_REQUEST') {
       setView('friends');
+    } else if (n.type === 'FRIEND_POST' && n.postId) {
+      setPostModal({ postId: n.postId, openComments: false });
+    } else if (n.type === 'FRIEND_STORY' || n.type === 'STORY_REACTION') {
+      setView('feed');
+      setTimeout(() => window.dispatchEvent(new CustomEvent('chatott:open-story', { detail: { authorId: n.type === 'FRIEND_STORY' ? n.actor.userId : user.userId } })), 400);
     } else if (['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST'].includes(n.type) && n.conversationId) {
       setView('chat');
       openConversation(n.conversationId);
@@ -269,6 +274,7 @@ export default function ChatApp({ user, onLogout, onUserChanged }) {
         onShowSaved={() => setView('saved')}
         onShowHashtag={() => setView('hashtag')}
         onShowAdmin={() => setView('admin')}
+        onShowAssistant={() => setView('assistant')}
       />
 
       {(view === 'feed' || view === 'profile') && (

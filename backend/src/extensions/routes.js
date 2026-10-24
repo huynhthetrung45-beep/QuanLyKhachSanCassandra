@@ -10,6 +10,7 @@ const socialx = require('./social-extras.service');
 const notifyx = require('./notify-extras.service');
 const moderation = require('./moderation.service');
 const aix = require('./ai-extras.service');
+const assistant = require('./assistant.service');
 const storage = require('./lib/storage');
 
 const perUser = (windowMs, max, message) => rateLimit({ windowMs, max, key: req => req.user.userId, message });
@@ -95,6 +96,11 @@ router.post('/conversations/:conversationId/ai/reply-suggestions', aiLimiter, as
 router.post('/conversations/:conversationId/messages/:messageId/translate', aiLimiter, async (req, res) =>
     res.json(await aix.translate(req.params.conversationId, req.params.messageId, req.user, req.body || {})));
 
+// ----- Tro ly AI (Gemini) -----
+router.get('/assistant', async (req, res) => res.json(await assistant.history(req.user)));
+router.post('/assistant/messages', aiLimiter, async (req, res) => res.status(201).json(await assistant.ask(req.user, req.body || {})));
+router.delete('/assistant', async (req, res) => res.json(await assistant.clear(req.user)));
+
 // ----- Bai viet mo rong -----
 router.put('/posts/:postId/save', async (req, res) => res.json(await socialx.savePost(req.user, req.params.postId)));
 router.delete('/posts/:postId/save', async (req, res) => res.json(await socialx.unsavePost(req.user, req.params.postId)));
@@ -104,6 +110,11 @@ router.get('/stories', async (req, res) => res.json(await socialx.storyFeed(req.
 router.post('/stories', async (req, res) => res.status(201).json(await socialx.createStory(req.user, req.body || {})));
 router.post('/stories/:authorId/:storyId/view', async (req, res) => res.json(await socialx.viewStory(req.user, req.params.authorId, req.params.storyId)));
 router.get('/stories/mine/:storyId/viewers', async (req, res) => res.json(await socialx.storyViewers(req.user, req.params.storyId)));
+router.put('/stories/:authorId/:storyId/reaction', async (req, res) => res.json(await socialx.reactStory(req.user, req.params.authorId, req.params.storyId, req.body || {})));
+router.post('/stories/:authorId/:storyId/reply', sendLimiter, async (req, res) =>
+    res.status(201).json(await socialx.replyStory(req.user, req.params.authorId, req.params.storyId, req.body || {})));
+router.post('/stories/:authorId/:storyId/share', sendLimiter, async (req, res) =>
+    res.status(201).json(await socialx.shareStory(req.user, req.params.authorId, req.params.storyId, req.body || {})));
 router.delete('/stories/mine/:storyId', async (req, res) => res.json(await socialx.deleteStory(req.user, req.params.storyId)));
 router.get('/stories/:authorId/:storyId/media', async (req, res) => {
     const f = await socialx.openStoryMedia(req.user, req.params.authorId, req.params.storyId);

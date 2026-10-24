@@ -12,7 +12,10 @@ const storage = require('./lib/storage');
 
 const STORY_TTL = 24 * 3600;
 const STORY_MAX = 500;
-const BACKGROUNDS = ['teal', 'harbor', 'sunset', 'violet', 'forest', 'rose'];
+const BACKGROUNDS = ['teal', 'harbor', 'sunset', 'violet', 'forest', 'rose', 'ocean', 'fire', 'night', 'mint', 'gold', 'berry', 'sky', 'black'];
+const FONTS = ['clean', 'simple', 'casual', 'headline'];
+const ALIGNS = ['left', 'center', 'right'];
+const STORY_REACTIONS = ['LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'];
 const PAGE = 20;
 
 // ===== PT-22: luu bai =====
@@ -133,13 +136,28 @@ async function decoratePosts(body, req) {
     return body;
 }
 
-// ===== PT-23: story 24 gio (ban be + ban than) =====
-function storyDto(row, authorId, viewerId) {
+// ===== PT-23: tin (story) 24 gio cho ban be + ban than =====
+// Mo rong: kieu chu (story_styles), cam xuc (story_reactions), tra loi bang tin nhan, chia se tin.
+const notifications = () => require('../services/notification.service');
+const excerptOf = (t, n = 60) => {
+    const s = String(t || '').replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n) + '…' : s;
+};
+
+async function readStyle(storyId) {
+    return (await db.execute('SELECT font, text_color, text_align, shared_from_id, shared_from_name FROM story_styles WHERE story_id = ?', [storyId])).first();
+}
+
+function storyDto(row, authorId, viewerId, style = null) {
     return {
         storyId: row.story_id.toString(),
         authorId,
         content: row.content || '',
         background: row.background || 'teal',
+        font: (style && style.font) || 'clean',
+        textColor: (style && style.text_color) || '#ffffff',
+        textAlign: (style && style.text_align) || 'center',
+        sharedFrom: style && style.shared_from_id ? { userId: style.shared_from_id, displayName: style.shared_from_name || '' } : null,
         mediaUrl: row.media_key ? `/api/v1/stories/${encodeURIComponent(authorId)}/${row.story_id}/media` : null,
         createdAt: iso(row.created_at),
         expiresAt: new Date(new Date(row.created_at).getTime() + STORY_TTL * 1000).toISOString(),
@@ -153,30 +171,68 @@ async function activeStories(authorId) {
     return rs.rows.filter(r => new Date(r.created_at).getTime() > cutoff); // TTL Cassandra la chinh, loc them cho chac
 }
 
-async function createStory(user, { content, background, buffer }) {
+function validateStyle(body = {}) {
+    const textColor = /^#[0-9a-f]{6}$/i.test(String(body.textColor || '')) ? String(body.textColor).toLowerCase() : '#ffffff';
+    return {
+        background: BACKGROUNDS.includes(body.background) ? body.background : 'teal',
+        font: FONTS.includes(body.font) ? body.font : 'clean',
+        textColor,
+        textAlign: ALIGNS.includes(body.textAlign) ? body.textAlign : 'center'
+    };
+}
+
+// Thong bao cho ban be (toi da 300 nguoi). dedupeKey rieng tung nguoi nhan.
+async function notifyFriends(user, ev) {
+    const friends = (await social.listFriends(user)).slice(0, 300);
+    for (const f of friends) {
+        await notifications().notifySafe({ recipientId: f.userId, actorId: user.userId, ...ev, dedupeKey: `${ev.dedupeKey}:${f.userId}` });
+    }
+    return friends.length;
+}
+
+async function createStory(user, { content, buffer, sharedFrom = null, mediaCopy = null, ...rest }) {
     const text = typeof content === 'string' ? content.trim() : '';
-    if (text.length > STORY_MAX) throw httpError(400, 'INVALID_STORY', `Story tối đa ${STORY_MAX} ký tự.`);
+    if (text.length > STORY_MAX) throw httpError(400, 'INVALID_STORY', `Tin tối đa ${STORY_MAX} ký tự.`);
+    const style = validateStyle(rest);
     let mediaKey = null;
     let mime = null;
     if (buffer && buffer.length) {
         mime = storage.checkImage(buffer, 8 * 1024 * 1024);
         mediaKey = await storage.save('stories', buffer);
+    } else if (mediaCopy) {
+        mediaKey = mediaCopy.key;
+        mime = mediaCopy.mime;
     }
-    if (!text && !mediaKey) throw httpError(400, 'INVALID_STORY', 'Story cần có chữ hoặc ảnh.');
-    const bg = BACKGROUNDS.includes(background) ? background : 'teal';
+    if (!text && !mediaKey) throw httpError(400, 'INVALID_STORY', 'Tin cần có chữ hoặc ảnh.');
     const storyId = TimeUuid.now();
     await db.execute(
         `INSERT INTO stories_by_author (author_id, story_id, content, background, media_key, media_mime, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?) USING TTL ?`,
-        [user.userId, storyId, text || null, bg, mediaKey, mime, storyId.getDate(), STORY_TTL]);
+        [user.userId, storyId, text || null, style.background, mediaKey, mime, storyId.getDate(), STORY_TTL]);
+    await db.execute(
+        'INSERT INTO story_styles (story_id, font, text_color, text_align, shared_from_id, shared_from_name) VALUES (?, ?, ?, ?, ?, ?) USING TTL ?',
+        [storyId, style.font, style.textColor, style.textAlign, sharedFrom ? sharedFrom.userId : null, sharedFrom ? sharedFrom.displayName : null, STORY_TTL + 3600]);
     const friends = (await social.listFriends(user)).map(f => f.userId);
     realtime.publish([user.userId, ...friends], 'story:changed', { authorId: user.userId });
-    return storyDto({ story_id: storyId, content: text, background: bg, media_key: mediaKey, created_at: storyId.getDate() }, user.userId, user.userId);
+    // Moi tac gia toi da 1 thong bao "dang tin" / ngay / nguoi nhan.
+    const day = new Date().toISOString().slice(0, 10);
+    await notifyFriends(user, {
+        type: 'FRIEND_STORY', dedupeKey: `FRIEND_STORY:${user.userId}:${day}`,
+        preview: text ? excerptOf(text) : 'đã thêm một tin mới'
+    }).catch(error => console.warn('[ext] Không gửi được thông báo tin mới:', error.message));
+    const styleRow = { font: style.font, text_color: style.textColor, text_align: style.textAlign,
+        shared_from_id: sharedFrom && sharedFrom.userId, shared_from_name: sharedFrom && sharedFrom.displayName };
+    return storyDto({ story_id: storyId, content: text, background: style.background, media_key: mediaKey, created_at: storyId.getDate() },
+        user.userId, user.userId, styleRow);
 }
 
 async function canSeeStories(viewer, authorId) {
     if (viewer.userId === authorId) return true;
     return (await social.relationshipStatus(viewer.userId, authorId)) === 'FRIENDS';
+}
+
+async function reactionsOf(sid) {
+    return (await db.execute('SELECT user_id, reaction, reacted_at FROM story_reactions WHERE story_id = ?', [sid], { fetchSize: 1000 })).rows;
 }
 
 async function storyFeed(user) {
@@ -186,11 +242,25 @@ async function storyFeed(user) {
     await Promise.all(authors.map(async a => {
         const rows = await activeStories(a.userId);
         if (rows.length === 0) return;
-        const items = rows.map(r => storyDto(r, a.userId, user.userId)).reverse(); // cu -> moi de xem lan luot
-        const viewed = await Promise.all(items.map(s => db.execute('SELECT viewer_id FROM story_views WHERE story_id = ? AND viewer_id = ?',
-            [TimeUuid.fromString(s.storyId), user.userId]).then(r => Boolean(r.first()))));
-        items.forEach((s, i) => { s.viewed = viewed[i]; });
-        groups.push({ author: { userId: a.userId, displayName: a.displayName }, items, allViewed: viewed.every(Boolean), latestAt: items[items.length - 1].createdAt });
+        const items = [];
+        for (const r of [...rows].reverse()) { // cu -> moi de xem lan luot
+            const sid = r.story_id;
+            const [style, viewed, reactions, views] = await Promise.all([
+                readStyle(sid),
+                db.execute('SELECT viewer_id FROM story_views WHERE story_id = ? AND viewer_id = ?', [sid, user.userId]).then(x => Boolean(x.first())),
+                reactionsOf(sid),
+                a.userId === user.userId ? db.execute('SELECT viewer_id FROM story_views WHERE story_id = ?', [sid], { fetchSize: 1000 }).then(x => x.rows.length) : null
+            ]);
+            const dto = storyDto(r, a.userId, user.userId, style);
+            dto.viewed = viewed;
+            dto.myReaction = reactions.find(x => x.user_id === user.userId)?.reaction || null;
+            if (dto.mine) {
+                dto.viewCount = views;
+                dto.reactionCounts = reactions.reduce((m, x) => ({ ...m, [x.reaction]: (m[x.reaction] || 0) + 1 }), {});
+            }
+            items.push(dto);
+        }
+        groups.push({ author: { userId: a.userId, displayName: a.displayName }, items, allViewed: items.every(s => s.viewed || s.mine), latestAt: items[items.length - 1].createdAt });
     }));
     groups.sort((a, b) => (a.author.userId === user.userId ? -1 : b.author.userId === user.userId ? 1
         : Number(a.allViewed) - Number(b.allViewed) || b.latestAt.localeCompare(a.latestAt)));
@@ -199,10 +269,10 @@ async function storyFeed(user) {
 
 async function requireStory(viewer, authorId, storyId) {
     const sid = posts.parseId(storyId, 'storyId');
-    if (!(await canSeeStories(viewer, authorId))) throw httpError(404, 'STORY_NOT_FOUND', 'Không tìm thấy story.');
+    if (!(await canSeeStories(viewer, authorId))) throw httpError(404, 'STORY_NOT_FOUND', 'Không tìm thấy tin.');
     const row = (await db.execute('SELECT story_id, content, background, media_key, media_mime, created_at FROM stories_by_author WHERE author_id = ? AND story_id = ?',
         [authorId, sid])).first();
-    if (!row) throw httpError(404, 'STORY_NOT_FOUND', 'Story đã hết hạn hoặc bị xóa.');
+    if (!row) throw httpError(404, 'STORY_NOT_FOUND', 'Tin đã hết hạn hoặc bị xóa.');
     return { sid, row };
 }
 
@@ -216,9 +286,79 @@ async function viewStory(user, authorId, storyId) {
 
 async function storyViewers(user, storyId) {
     const { sid } = await requireStory(user, user.userId, storyId);
-    const rs = await db.execute('SELECT viewer_id, viewed_at FROM story_views WHERE story_id = ?', [sid]);
-    const profiles = await userService.getUsersByIds(rs.rows.map(r => r.viewer_id));
-    return { items: rs.rows.map(r => ({ userId: r.viewer_id, displayName: profiles.get(r.viewer_id)?.displayName || r.viewer_id, viewedAt: iso(r.viewed_at) })) };
+    const [views, reactions] = await Promise.all([
+        db.execute('SELECT viewer_id, viewed_at FROM story_views WHERE story_id = ?', [sid], { fetchSize: 1000 }),
+        reactionsOf(sid)
+    ]);
+    const ids = [...new Set([...views.rows.map(r => r.viewer_id), ...reactions.map(r => r.user_id)])];
+    const profiles = await userService.getUsersByIds(ids);
+    const byUser = new Map(reactions.map(r => [r.user_id, r.reaction]));
+    const viewedAt = new Map(views.rows.map(r => [r.viewer_id, iso(r.viewed_at)]));
+    return {
+        items: ids.map(id => ({ userId: id, displayName: profiles.get(id)?.displayName || id, viewedAt: viewedAt.get(id) || null, reaction: byUser.get(id) || null }))
+            .sort((a, b) => String(b.viewedAt).localeCompare(String(a.viewedAt)))
+    };
+}
+
+// Cam xuc ve tin cua nguoi khac (moi nguoi 1 cam xuc; gui null de go).
+async function reactStory(user, authorId, storyId, body = {}) {
+    const { sid } = await requireStory(user, authorId, storyId);
+    if (authorId === user.userId) throw httpError(400, 'OWN_STORY', 'Không thể bày tỏ cảm xúc với tin của chính mình.');
+    const reaction = body.reaction === null ? null : String(body.reaction || '').toUpperCase();
+    if (reaction === null) {
+        await db.execute('DELETE FROM story_reactions WHERE story_id = ? AND user_id = ?', [sid, user.userId]);
+        return { reaction: null };
+    }
+    if (!STORY_REACTIONS.includes(reaction)) throw httpError(400, 'INVALID_REACTION', 'Cảm xúc không hợp lệ.');
+    await db.execute('INSERT INTO story_reactions (story_id, user_id, reaction, reacted_at) VALUES (?, ?, ?, ?) USING TTL ?',
+        [sid, user.userId, reaction, new Date(), STORY_TTL + 3600]);
+    await notifications().notifySafe({
+        recipientId: authorId, actorId: user.userId, type: 'STORY_REACTION', dedupeKey: `STORY_REACTION:${sid}:${user.userId}`,
+        preview: reaction
+    });
+    realtime.publish([authorId], 'story:changed', { authorId, storyId: sid.toString(), kind: 'reaction' });
+    return { reaction };
+}
+
+// Tra loi tin = gui tin nhan 1-1 cho tac gia (dung service chat co san).
+async function replyStory(user, authorId, storyId, body = {}) {
+    const { row } = await requireStory(user, authorId, storyId);
+    if (authorId === user.userId) throw httpError(400, 'OWN_STORY', 'Không thể trả lời tin của chính mình.');
+    const text = typeof body.content === 'string' ? body.content.trim() : '';
+    if (!text || text.length > 1000) throw httpError(400, 'INVALID_CONTENT', 'Nội dung trả lời từ 1 đến 1000 ký tự.');
+    const conversations = require('../services/conversation.service');
+    const messages = require('../services/message.service');
+    const { conversationId } = await conversations.openDirect(user, authorId);
+    const quote = row.content ? `“${excerptOf(row.content)}”` : '(tin ảnh)';
+    const msg = await messages.sendMessage(conversationId, user, { content: `↩️ Trả lời tin ${quote}: ${text}` });
+    return { conversationId, messageId: msg.messageId };
+}
+
+// Chia se tin: target = 'story' (dang lai len tin cua minh) | 'chat' (gui vao 1 hoi thoai).
+async function shareStory(user, authorId, storyId, body = {}) {
+    const { sid, row } = await requireStory(user, authorId, storyId);
+    const style = await readStyle(sid);
+    const author = (await userService.getUsersByIds([authorId])).get(authorId);
+    const authorName = author ? author.displayName : authorId;
+    if (body.target === 'chat') {
+        const messages = require('../services/message.service');
+        const note = typeof body.content === 'string' ? body.content.trim().slice(0, 500) : '';
+        const content = `📖 Tin của ${authorName}: ${row.content ? `“${excerptOf(row.content, 200)}”` : '(tin ảnh)'}${note ? `\n${note}` : ''}`;
+        const msg = await messages.sendMessage(String(body.conversationId || ''), user, { content });
+        return { shared: 'chat', conversationId: String(body.conversationId), messageId: msg.messageId };
+    }
+    if (authorId === user.userId) throw httpError(400, 'OWN_STORY', 'Đây đã là tin của bạn.');
+    let mediaCopy = null;
+    if (row.media_key) {
+        // Sao chep tep anh: tin goc bi xoa / het han khong lam mat anh cua ban chia se.
+        const buf = await require('fs').promises.readFile(storage.fullPath('stories', row.media_key)).catch(() => null);
+        if (buf) mediaCopy = { key: await storage.save('stories', buf), mime: row.media_mime };
+    }
+    const created = await createStory(user, {
+        content: row.content || '', background: row.background, font: style?.font, textColor: style?.text_color,
+        textAlign: style?.text_align, mediaCopy, sharedFrom: { userId: authorId, displayName: authorName }
+    });
+    return { shared: 'story', story: created };
 }
 
 async function deleteStory(user, storyId) {
@@ -232,11 +372,21 @@ async function deleteStory(user, storyId) {
 
 async function openStoryMedia(user, authorId, storyId) {
     const { row } = await requireStory(user, authorId, storyId);
-    if (!row.media_key) throw httpError(404, 'FILE_GONE', 'Story không có ảnh.');
+    if (!row.media_key) throw httpError(404, 'FILE_GONE', 'Tin không có ảnh.');
     return { key: row.media_key, mime: row.media_mime };
+}
+
+// Thong bao ban be khi dang bai moi (bai Cong khai / Ban be; khong thong bao bai chia se, bai Rieng tu).
+async function notifyFriendsOfPost(post, user) {
+    if (!post || !post.postId || post.privacy === 'PRIVATE' || post.shared) return 0;
+    return notifyFriends(user, {
+        type: 'FRIEND_POST', dedupeKey: `FRIEND_POST:${post.postId}`, postId: TimeUuid.fromString(post.postId),
+        preview: post.content ? excerptOf(post.content, 100) : 'đã đăng ảnh mới'
+    });
 }
 
 module.exports = {
     savePost, unsavePost, listSaved, hashtagsOf, indexPostHashtags, postsByHashtag, decoratePosts, decoratePostList,
-    createStory, storyFeed, viewStory, storyViewers, deleteStory, openStoryMedia, BACKGROUNDS
+    createStory, storyFeed, viewStory, storyViewers, deleteStory, openStoryMedia, reactStory, replyStory, shareStory,
+    notifyFriendsOfPost, BACKGROUNDS, FONTS, STORY_REACTIONS
 };

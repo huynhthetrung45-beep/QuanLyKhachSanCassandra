@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AtSign, Clock, UserRoundPlus, ShieldCheck } from 'lucide-react';
+import { AtSign, Clock, UserRoundPlus, ShieldCheck, Newspaper, Images } from 'lucide-react';
 import { Bell, CheckCheck, Heart, LoaderCircle, MessageCircle, MessageSquare, Reply, RotateCcw, Share2, UserCheck, UserPlus } from 'lucide-react';
 import Avatar from './Avatar';
 import { api } from '../api';
@@ -18,7 +18,10 @@ const KIND = {
   MENTION: { icon: AtSign, text: n => `đã nhắc đến bạn${n.preview ? `: “${n.preview}”` : ''}` },
   TASK_DUE: { icon: Clock, text: n => `Nhắc hạn công việc — ${n.preview}` },
   GROUP_JOIN_REQUEST: { icon: UserRoundPlus, text: n => n.preview || 'muốn tham gia nhóm' },
-  REPORT_UPDATE: { icon: ShieldCheck, text: n => n.preview || 'Báo cáo của bạn đã được xử lý.' }
+  REPORT_UPDATE: { icon: ShieldCheck, text: n => n.preview || 'Báo cáo của bạn đã được xử lý.' },
+  FRIEND_POST: { icon: Newspaper, text: n => `vừa đăng bài viết mới${n.preview ? `: “${n.preview}”` : ''}` },
+  FRIEND_STORY: { icon: Images, text: n => `vừa thêm tin mới${n.preview && n.preview !== 'đã thêm một tin mới' ? `: “${n.preview}”` : ''}` },
+  STORY_REACTION: { icon: Heart, text: n => `đã bày tỏ cảm xúc ${({ LIKE: '👍', LOVE: '❤️', HAHA: '😆', WOW: '😮', SAD: '😢', ANGRY: '😡' })[n.preview] || ''} về tin của bạn` }
 };
 
 export function describe(n) {

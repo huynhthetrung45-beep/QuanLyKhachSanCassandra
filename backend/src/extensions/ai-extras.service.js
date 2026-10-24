@@ -16,7 +16,12 @@ function setProvider(fn) { provider = fn; }
 async function callModel({ system, prompt, maxTokens = 600 }) {
     if (provider) return provider({ system, prompt });
     const st = ai.status();
-    if (!st.configured) throw httpError(503, 'AI_NOT_CONFIGURED', st.message);
+    // Chua co khoa Anthropic nhung co GEMINI_API_KEY -> dung Gemini.
+    const gemini = require('./lib/gemini');
+    if (!st.configured && gemini.config().configured) {
+        return gemini.generate({ system, messages: [{ role: 'user', content: prompt }], maxTokens, temperature: 0.3 });
+    }
+    if (!st.configured) throw httpError(503, 'AI_NOT_CONFIGURED', st.message + ' Hoặc đặt GEMINI_API_KEY để dùng Gemini.');
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {

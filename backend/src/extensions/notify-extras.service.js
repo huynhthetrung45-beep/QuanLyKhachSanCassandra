@@ -14,7 +14,7 @@ const realtime = require('../services/realtime.service');
 const userService = require('../services/user.service');
 const notificationService = require('../services/notification.service');
 
-const EXTRA_TYPES = ['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST', 'REPORT_UPDATE'];
+const EXTRA_TYPES = ['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST', 'REPORT_UPDATE', 'FRIEND_POST', 'FRIEND_STORY', 'STORY_REACTION'];
 const ALL_TYPES = () => notificationService.TYPES.slice();
 
 const TYPE_TEXT = {
@@ -28,7 +28,10 @@ const TYPE_TEXT = {
     MENTION: 'đã nhắc đến bạn',
     TASK_DUE: 'Công việc sắp đến hạn',
     GROUP_JOIN_REQUEST: 'muốn tham gia nhóm',
-    REPORT_UPDATE: 'Báo cáo của bạn đã được xử lý'
+    REPORT_UPDATE: 'Báo cáo của bạn đã được xử lý',
+    FRIEND_POST: 'vừa đăng bài viết mới',
+    FRIEND_STORY: 'vừa thêm tin mới',
+    STORY_REACTION: 'đã bày tỏ cảm xúc về tin của bạn'
 };
 
 // ===== PT-25 =====

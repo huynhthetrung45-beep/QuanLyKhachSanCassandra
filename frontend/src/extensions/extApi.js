@@ -114,14 +114,26 @@ export const ext = {
   suggestReplies: id => request('POST', `/conversations/${id}/ai/reply-suggestions`),
   translate: (id, m, targetLang) => request('POST', `/conversations/${id}/messages/${m.messageId}/translate`, { createdAt: m.createdAt, targetLang }),
 
+  // tro ly AI (Gemini)
+  assistant: () => request('GET', '/assistant'),
+  askAssistant: content => request('POST', '/assistant/messages', { content }),
+  clearAssistant: () => request('DELETE', '/assistant'),
+
   // bai viet
   savePost: postId => request('PUT', `/posts/${postId}/save`),
   unsavePost: postId => request('DELETE', `/posts/${postId}/save`),
   savedPosts: cursor => request('GET', `/me/saved-posts${cursor ? '?cursor=' + enc(cursor) : ''}`),
   hashtagPosts: (tag, cursor) => request('GET', `/hashtags/${enc(tag)}/posts${cursor ? '?cursor=' + enc(cursor) : ''}`),
   stories: () => request('GET', '/stories'),
-  createStory: (content, background) => request('POST', '/stories', { content, background }),
-  createImageStory: (blob, content, background) => uploadRaw('/stories/media', blob, { 'X-Story-Text': enc(content || ''), 'X-Story-Background': enc(background || '') }),
+  // style: { background, font, textColor, textAlign }
+  createStory: (content, style = {}) => request('POST', '/stories', { content, ...(typeof style === 'string' ? { background: style } : style) }),
+  createImageStory: (blob, content, style = {}) => uploadRaw('/stories/media', blob, {
+    'X-Story-Text': enc(content || ''), 'X-Story-Background': enc(style.background || ''), 'X-Story-Font': enc(style.font || ''),
+    'X-Story-Text-Color': enc(style.textColor || ''), 'X-Story-Text-Align': enc(style.textAlign || '')
+  }),
+  reactStory: (authorId, storyId, reaction) => request('PUT', `/stories/${enc(authorId)}/${storyId}/reaction`, { reaction }),
+  replyStory: (authorId, storyId, content) => request('POST', `/stories/${enc(authorId)}/${storyId}/reply`, { content }),
+  shareStory: (authorId, storyId, payload) => request('POST', `/stories/${enc(authorId)}/${storyId}/share`, payload),
   viewStory: (authorId, storyId) => request('POST', `/stories/${enc(authorId)}/${storyId}/view`),
   storyViewers: storyId => request('GET', `/stories/mine/${storyId}/viewers`),
   deleteStory: storyId => request('DELETE', `/stories/mine/${storyId}`),

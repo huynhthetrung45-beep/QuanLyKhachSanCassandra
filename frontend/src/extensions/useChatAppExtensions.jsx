@@ -4,13 +4,17 @@ import { useCallback, useEffect, useState } from 'react';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AccountSettings from './AccountSettings';
 import AdminPage from './AdminPage';
+import AssistantPage from './AssistantPage';
 import { JoinInviteDialog, PostListPage } from './SocialExtras';
 import { ext } from './extApi';
 import { useSse } from './sse';
 import { loadPrefs } from './prefsStore';
 import { registerSw } from './push';
 
-export const EXTRA_VIEWS = ['settings', 'saved', 'hashtag', 'admin'];
+export const EXTRA_VIEWS = ['settings', 'saved', 'hashtag', 'admin', 'assistant'];
+
+// Bam anh dai dien o bat ky dau -> mo ho so. Bo qua noi bam anh co y nghia khac.
+const AVATAR_SKIP = '.rail-account, .picker-list, .ext-mention-pop, .ext-story-tile, .ext-story-viewer, .ext-story-compose, .profile-dialog, .ext-cropper';
 
 function takeParam(name) {
   const url = new URL(window.location.href);
@@ -39,6 +43,18 @@ export default function useChatAppExtensions({ user, view, setView, conversation
   }, [openConversation, setView]);
 
   useEffect(() => {
+    const onClick = e => {
+      const el = e.target.closest?.('[data-profile-id]');
+      if (!el || el.closest(AVATAR_SKIP)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onOpenProfile(el.dataset.profileId);
+    };
+    document.addEventListener('click', onClick, true); // capture: truoc khi nut chua anh xu ly
+    return () => document.removeEventListener('click', onClick, true);
+  }, [onOpenProfile]);
+
+  useEffect(() => {
     const onNav = e => {
       const d = e.detail || {};
       if (d.view === 'hashtag') setTag(String(d.tag || '').toLowerCase());
@@ -58,6 +74,7 @@ export default function useChatAppExtensions({ user, view, setView, conversation
           {view === 'settings' && <AccountSettings key={settingsTab} user={user} initialTab={settingsTab} onToast={setToast} onUserChanged={onUserChanged} />}
           {view === 'saved' && <PostListPage mode="saved" user={user} conversations={conversations} onOpenProfile={onOpenProfile} onToast={setToast} />}
           {view === 'hashtag' && <PostListPage mode="hashtag" tag={tag} user={user} conversations={conversations} onOpenProfile={onOpenProfile} onToast={setToast} />}
+          {view === 'assistant' && <AssistantPage user={user} onToast={setToast} />}
           {view === 'admin' && (security?.isAdmin ? <AdminPage user={user} onToast={setToast} />
             : <p className="muted pad">Chức năng chỉ dành cho quản trị viên.</p>)}
         </ErrorBoundary>

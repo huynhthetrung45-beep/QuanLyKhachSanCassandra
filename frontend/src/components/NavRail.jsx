@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell, LogOut, MessageCircle, Gauge, UsersRound, Contact, UserRound, Newspaper, Search } from 'lucide-react';
-import { Bookmark, Hash, Settings, Shield } from 'lucide-react';
+import { Bookmark, Bot, Hash, Settings, Shield } from 'lucide-react';
 import Avatar from './Avatar';
 import Logo from './Logo';
 
 export default function NavRail({
   user, onLogout, onCreateGroup, demoMode, onToggleDemo, live, unreadCount,
   view = 'chat', onShowChat, onShowFriends, onShowFeed, onShowNotifications, onShowSearch, notifBadge = 0, friendBadge = 0, onOpenMyProfile
-  , isAdmin = false, onShowSettings, onShowSaved, onShowHashtag, onShowAdmin
+  , isAdmin = false, onShowSettings, onShowSaved, onShowHashtag, onShowAdmin, onShowAssistant
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -107,6 +107,11 @@ export default function NavRail({
           <Contact size={22} />
           {friendBadge > 0 && <span className="rail-badge">{friendBadge > 9 ? '9+' : friendBadge}</span>}
         </button>
+        {onShowAssistant && (
+          <button type="button" className={'rail-btn' + (view === 'assistant' ? ' active' : '')} title="Trợ lý AI (Gemini)" onClick={onShowAssistant}>
+            <Bot size={22} />
+          </button>
+        )}
         {onShowHashtag && (
           <button type="button" className={'rail-btn' + (view === 'hashtag' ? ' active' : '')} title="Hashtag" onClick={onShowHashtag}>
             <Hash size={22} />

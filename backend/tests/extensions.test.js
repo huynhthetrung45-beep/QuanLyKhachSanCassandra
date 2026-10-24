@@ -395,3 +395,79 @@ test('NFR-18 /metrics theo định dạng Prometheus', async () => {
     assert.match(text, /chatott_http_requests_total\{method="GET"/);
     assert.match(text, /chatott_sse_connections \d+/);
 });
+
+// ===== Bo sung: thong bao ban be dang bai / tin, cam xuc - tra loi - chia se tin, tro ly Gemini =====
+test('Thông báo bạn bè: đăng bài (Công khai/Bạn bè) và đăng tin; bài Riêng tư không thông báo', async () => {
+    const binh = await login('binh@chatott.demo');
+    const chi = await login('chi@chatott.demo');
+    await binh.post('/api/v1/friends/requests', { targetUserId: 'user03' });
+    await chi.post('/api/v1/friends/requests/user02/accept');
+    await chi.post('/api/v1/notifications/read-all');
+    const post = await binh.post('/api/v1/posts', { content: 'Bài mới cho bạn bè', privacy: 'FRIENDS' });
+    await binh.post('/api/v1/posts', { content: 'Bài riêng tư', privacy: 'PRIVATE' });
+    await tick(80);
+    const list = (await chi.get('/api/v1/notifications')).body.items;
+    const fp = list.filter(n => n.type === 'FRIEND_POST');
+    assert.equal(fp.length, 1, 'chỉ 1 thông báo (bài riêng tư không thông báo)');
+    assert.equal(fp[0].postId, post.body.postId);
+    assert.equal(fp[0].actor.userId, 'user02');
+    await binh.post('/api/v1/stories', { content: 'Tin thứ nhất' });
+    await binh.post('/api/v1/stories', { content: 'Tin thứ hai' });
+    await tick(80);
+    const fs2 = (await chi.get('/api/v1/notifications')).body.items.filter(n => n.type === 'FRIEND_STORY');
+    assert.equal(fs2.length, 1, 'tối đa 1 thông báo đăng tin / ngày');
+});
+
+test('Tin: kiểu chữ, cảm xúc, trả lời bằng tin nhắn, chia sẻ lên tin của mình và vào chat', async () => {
+    const binh = await login('binh@chatott.demo');
+    const chi = await login('chi@chatott.demo');
+    const s = await binh.post('/api/v1/stories', { content: 'Tin có kiểu chữ', background: 'ocean', font: 'headline', textColor: '#ffee00', textAlign: 'left' });
+    assert.equal(s.status, 201, JSON.stringify(s.body));
+    assert.equal(s.body.font, 'headline');
+    assert.equal(s.body.textColor, '#ffee00');
+    const sid = s.body.storyId;
+    assert.equal((await chi.put(`/api/v1/stories/user02/${sid}/reaction`, { reaction: 'LOVE' })).body.reaction, 'LOVE');
+    assert.equal((await binh.put(`/api/v1/stories/user02/${sid}/reaction`, { reaction: 'LOVE' })).status, 400, 'không tự thả cảm xúc');
+    const viewers = await binh.get(`/api/v1/stories/mine/${sid}/viewers`);
+    assert.equal(viewers.body.items.find(v => v.userId === 'user03').reaction, 'LOVE');
+    await tick(50);
+    assert.ok((await binh.get('/api/v1/notifications')).body.items.some(n => n.type === 'STORY_REACTION'));
+    const reply = await chi.post(`/api/v1/stories/user02/${sid}/reply`, { content: 'Đẹp quá!' });
+    assert.equal(reply.status, 201, JSON.stringify(reply.body));
+    const msgs = await binh.get(`/api/v1/conversations/${reply.body.conversationId}/messages`);
+    assert.match(msgs.body.items[0].content, /Trả lời tin “Tin có kiểu chữ”: Đẹp quá!/);
+    const re = await chi.post(`/api/v1/stories/user02/${sid}/share`, { target: 'story' });
+    assert.equal(re.body.story.sharedFrom.userId, 'user02');
+    assert.equal(re.body.story.font, 'headline');
+    const toChat = await chi.post(`/api/v1/stories/user02/${sid}/share`, { target: 'chat', conversationId: GROUP_ID });
+    assert.equal(toChat.status, 201, JSON.stringify(toChat.body));
+    const feed = await chi.get('/api/v1/stories');
+    const binhGroup = feed.body.groups.find(g => g.author.userId === 'user02');
+    assert.equal(binhGroup.items.find(i => i.storyId === sid).myReaction, 'LOVE');
+    const linh = await login('linh@chatott.demo');
+    assert.equal((await linh.put(`/api/v1/stories/user02/${sid}/reaction`, { reaction: 'LIKE' })).status, 404, 'người không phải bạn bè');
+});
+
+test('Trợ lý AI Gemini: chưa có khóa -> 503; có khóa -> trả lời, lưu lịch sử, gửi kèm ngữ cảnh, xóa lịch sử', async () => {
+    const gemini = require('../src/extensions/lib/gemini');
+    const an = await login('an@chatott.demo');
+    const before = process.env.GEMINI_API_KEY;
+    delete process.env.GEMINI_API_KEY;
+    gemini.setGenerator(null);
+    assert.equal((await an.get('/api/v1/assistant')).body.configured, false);
+    assert.equal((await an.post('/api/v1/assistant/messages', { content: 'Xin chào' })).status, 503);
+    const seen = [];
+    gemini.setGenerator(async ({ system, messages }) => { seen.push({ system, messages }); return `Trả lời #${messages.length}`; });
+    const r1 = await an.post('/api/v1/assistant/messages', { content: 'Cassandra là gì?' });
+    assert.equal(r1.status, 201, JSON.stringify(r1.body));
+    assert.equal(r1.body.answer.content, 'Trả lời #1');
+    await an.post('/api/v1/assistant/messages', { content: 'Giải thích thêm' });
+    assert.equal(seen[1].messages.length, 3, 'gửi kèm câu hỏi + trả lời trước làm ngữ cảnh');
+    assert.match(seen[0].system, /Nguyễn An/);
+    const h = await an.get('/api/v1/assistant');
+    assert.deepEqual(h.body.items.map(i => i.role), ['user', 'assistant', 'user', 'assistant']);
+    assert.equal((await an.del('/api/v1/assistant')).body.cleared, 4);
+    assert.equal((await an.get('/api/v1/assistant')).body.items.length, 0);
+    gemini.setGenerator(null);
+    if (before) process.env.GEMINI_API_KEY = before;
+});

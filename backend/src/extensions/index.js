@@ -29,7 +29,9 @@ const REQUIRED_TABLES = [
     'polls_by_conversation', 'poll_votes',
     'saved_posts_by_user', 'saved_post_keys', 'stories_by_author', 'story_views', 'posts_by_hashtag', 'hashtags_by_post',
     'notification_settings_by_user', 'push_subscriptions_by_user', 'task_reminders_by_day',
-    'reports', 'reports_by_status', 'report_keys', 'moderation_log', 'moderation_state'
+    'reports', 'reports_by_status', 'report_keys', 'moderation_log', 'moderation_state',
+    // migration 013
+    'story_reactions', 'story_styles', 'ai_chat_by_user'
 ];
 
 function installHooks() {
@@ -74,7 +76,8 @@ function mountUploads(app) {
         })));
     app.post('/api/v1/stories/media', ...chain(8), async (req, res) =>
         res.status(201).json(await socialx.createStory(req.user, {
-            buffer: bufferOf(req), content: header(req, 'x-story-text'), background: header(req, 'x-story-background')
+            buffer: bufferOf(req), content: header(req, 'x-story-text'), background: header(req, 'x-story-background'),
+            font: header(req, 'x-story-font'), textColor: header(req, 'x-story-text-color'), textAlign: header(req, 'x-story-text-align')
         })));
 }
 
@@ -128,6 +131,8 @@ function mountAuthed(app) {
     // Bai viet: trang thai da luu + hashtag.
     app.get(['/api/v1/feed', '/api/v1/users/:userId/posts', '/api/v1/posts/:postId'], decorateJson(socialx.decoratePosts));
     app.post(['/api/v1/posts', '/api/v1/posts/:postId/share'], afterJson(body => socialx.indexPostHashtags(body)));
+    // Thong bao ban be khi dang bai moi.
+    app.post('/api/v1/posts', afterJson((body, req) => socialx.notifyFriendsOfPost(body, req.user)));
     app.patch('/api/v1/posts/:postId', afterJson(body => socialx.indexPostHashtags(body)));
     app.delete('/api/v1/posts/:postId', afterJson(body => socialx.indexPostHashtags(body)));
     // Ho so: them anh bia.

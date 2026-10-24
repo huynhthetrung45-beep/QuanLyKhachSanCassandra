@@ -78,6 +78,20 @@ Cấu hình mới: xem cuối `backend/.env.example`.
 | PT-25 | Cài đặt loại thông báo | `GET/PUT /me/notification-settings` | Cài đặt › Thông báo |
 | PT-26 | AI gợi ý trả lời, dịch tin | `POST …/ai/reply-suggestions`, `POST …/messages/:mid/translate` | Nút lấp lánh; menu tin › Dịch (AI) |
 
+### Bổ sung đợt 2 (migration 013: story_reactions, story_styles, ai_chat_by_user)
+
+| Chức năng | API chính | Giao diện |
+|---|---|---|
+| Thông báo khi bạn bè đăng bài (Công khai/Bạn bè) và đăng tin (tối đa 1 lần/ngày/người) | tự động; loại `FRIEND_POST`, `FRIEND_STORY` | Mục Thông báo; bấm để mở bài / mở tin |
+| Bấm ảnh đại diện ở mọi nơi để xem hồ sơ | – | Mọi ảnh đại diện người dùng |
+| Cảm xúc về tin, trả lời tin bằng tin nhắn, chia sẻ tin (lên tin của mình hoặc vào chat) | `PUT /stories/:author/:id/reaction`, `POST …/reply`, `POST …/share` | Trình xem tin |
+| Khung tạo tin kiểu Facebook: tin ảnh / tin văn bản, 4 phông chữ, 14 phông nền, màu chữ, căn lề, xem trước | `POST /stories`, `POST /stories/media` | Bảng tin › Tạo tin |
+| Trình xem tin kiểu Facebook: danh sách tin bên trái, thanh tiến độ, tạm dừng, người xem + cảm xúc | `GET /stories`, `GET /stories/mine/:id/viewers` | Bảng tin › bấm thẻ tin |
+| Trợ lý AI dùng **Google Gemini** (lưu lịch sử, gửi kèm ngữ cảnh 20 lượt) | `GET/DELETE /assistant`, `POST /assistant/messages` | Nút robot trên thanh điều hướng |
+
+Gemini: đặt `GEMINI_API_KEY` (lấy tại aistudio.google.com/apikey) trong `backend/.env`. Khóa chỉ nằm ở backend.
+Khi chưa có `ANTHROPIC_API_KEY`, chức năng gợi ý trả lời và dịch tin cũng dùng Gemini.
+
 Phi chức năng:
 
 | Mã | Đã làm |
