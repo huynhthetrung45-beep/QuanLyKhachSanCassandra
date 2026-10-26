@@ -195,3 +195,14 @@
   .mt-panel { position: absolute; right: 0; top: 52px; bottom: 76px; }
   .mt-btn { min-width: 44px; height: 44px; padding: 0 10px; }
 }
+
+/* Chi tiet lich ca nhan */
+.wk-pill.wk-kind.k-PERSONAL { background: #e2efff; color: #1d5fae; }
+.wk-pill.wk-kind.k-MEETING { background: #efe9ff; color: #5a3fb8; }
+.wk-pill.wk-kind.k-TASK_SESSION { background: var(--teal-wash); color: var(--teal-deep); }
+.wk-facts dt { display: inline-flex; align-items: center; gap: 5px; }
+.wk-event-edit { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius-m); }
+.wk-confirm { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-m); background: var(--danger-wash); color: var(--text); font-size: 13.5px; }
+.wk-h4 { display: inline-flex; align-items: center; gap: 6px; }
+:root[data-theme='dark'] .wk-pill.wk-kind.k-PERSONAL { background: #1b2a44; color: #8fb3f0; }
+:root[data-theme='dark'] .wk-pill.wk-kind.k-MEETING { background: #2a2346; color: #b9a8f5; }

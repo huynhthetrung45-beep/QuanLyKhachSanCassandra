@@ -401,3 +401,31 @@
 :root[data-theme='dark'] .hit-text mark,
 :root[data-theme='dark'] .hit-files mark,
 :root[data-theme='dark'] .cs-snippet mark { color: #1b2a33; }
+
+/* Cam xuc binh luan bai viet */
+.ext-creact-btn { font-weight: 600; }
+.ext-creact-btn.on { color: var(--teal-deep); }
+.ext-creact-btn.on.r-LOVE, .ext-creact-btn.on.r-ANGRY { color: #e0455a; }
+.ext-creact-btn.on.r-HAHA, .ext-creact-btn.on.r-WOW, .ext-creact-btn.on.r-SAD { color: #d9a019; }
+.ext-creact-picker { left: 0; transform: none; }
+.ext-creact-picker button { width: 32px; height: 32px; font-size: 19px; }
+.ext-creact-sum { display: inline-flex; align-items: center; gap: 1px; padding: 1px 6px 1px 3px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--paper); color: var(--text-2); font-size: 12px; line-height: 18px; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.ext-creact-sum span { font-size: 13px; }
+.ext-creact-sum b { margin-left: 3px; font-weight: 600; }
+.ext-creact-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 8px; }
+.ext-creact-tabs button { border: none; background: none; padding: 6px 10px; border-radius: 8px; color: var(--text-2); font-weight: 600; }
+.ext-creact-tabs button.on { background: var(--teal-wash); color: var(--teal-deep); }
+.ext-creact-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; }
+.ext-creact-list li { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text); }
+.ext-creact-avatar { position: relative; display: inline-flex; }
+.ext-creact-badge { position: absolute; right: -4px; bottom: -4px; font-size: 14px; line-height: 1; }
+:root[data-theme='dark'] .ext-creact-sum { box-shadow: none; }
+
+/* An nut "Tao nhom" tren thanh dieu huong trai (trung voi nut canh o tim kiem o danh sach hoi thoai). Ma NavRail.jsx giu nguyen. */
+.rail .rail-btn[title="Tạo nhóm"] { display: none; }
+/* Che do toi: o tim hoi thoai (.search dat cung nen sang trong App.css); o chu ben trong de trong suot. */
+:root[data-theme='dark'] .search { background: #1e2d39; }
+:root[data-theme='dark'] .search:focus-within,
+:root[data-theme='dark'] .search.boxed { background: var(--paper); }
+:root[data-theme='dark'] .search input { background-color: transparent; }

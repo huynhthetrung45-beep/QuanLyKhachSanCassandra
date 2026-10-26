@@ -43,6 +43,7 @@ router.get('/groups/:conversationId/calendar', async (req, res) => res.json(awai
 router.get('/calendar/availability', async (req, res) => res.json(await cal.availability(req.user, req.query)));
 router.post('/calendar/check', async (req, res) => res.json(await cal.checkConflicts(req.user, body(req))));
 router.post('/calendar/events', writeLimiter, async (req, res) => res.status(201).json(await cal.createPersonalEvent(req.user, body(req))));
+router.get('/calendar/events/:eventId', async (req, res) => res.json(await cal.getEventDetail(req.user, req.params.eventId)));
 router.patch('/calendar/events/:eventId', writeLimiter, async (req, res) => res.json(await cal.moveEvent(req.user, req.params.eventId, body(req))));
 router.delete('/calendar/events/:eventId', writeLimiter, async (req, res) => res.json(await cal.cancelPersonalEvent(req.user, req.params.eventId)));
 

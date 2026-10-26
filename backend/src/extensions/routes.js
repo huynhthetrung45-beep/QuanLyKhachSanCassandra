@@ -149,4 +149,14 @@ router.post('/admin/reminders/run', async (req, res) => {
     res.json(await notifyx.runReminders());
 });
 
+// ----- Cam xuc binh luan bai viet (migration 016) -----
+const commentReactions = require('./comment-reactions.service');
+const commentReactLimiter = perUser(60 * 1000, Number(process.env.REACTION_RATE_LIMIT || 120), 'Bạn thả cảm xúc quá nhanh.');
+router.put('/posts/:postId/comments/:commentId/reaction', commentReactLimiter, async (req, res) =>
+    res.json(await commentReactions.react(req.user, req.params.postId, req.params.commentId, req.body || {})));
+router.delete('/posts/:postId/comments/:commentId/reaction', commentReactLimiter, async (req, res) =>
+    res.json(await commentReactions.unreact(req.user, req.params.postId, req.params.commentId)));
+router.get('/posts/:postId/comments/:commentId/reactions', async (req, res) =>
+    res.json(await commentReactions.listReactors(req.user, req.params.postId, req.params.commentId, req.query)));
+
 module.exports = router;

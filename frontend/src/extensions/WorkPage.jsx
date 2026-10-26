@@ -4,6 +4,7 @@ import { AlarmClock, BellRing, CalendarDays, ClipboardList, LayoutDashboard, Loa
 import { useSse } from './sse';
 import { StatusPill, TaskDetail, TaskForm } from './TaskDialogs';
 import WorkCalendar from './WorkCalendar';
+import EventDetail from './EventDetail';
 import { MeetingDetail, MeetingForm, MeetingList } from './Meetings';
 import { PRIORITY, STATUS, fmtDateTime, fmtRange, fromLocalInput, toLocalInput, work } from './workApi';
 import './work.css';
@@ -34,7 +35,7 @@ function TaskRow({ t, onOpen }) {
   );
 }
 
-function Overview({ onOpenTask, onOpenMeeting, onTab }) {
+function Overview({ onOpenTask, onOpenMeeting, onOpenEvent, onTab }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const load = useCallback(() => work.overview().then(d => { setData(d); setError(''); }).catch(err => setError(err.message)), []);
@@ -60,7 +61,7 @@ function Overview({ onOpenTask, onOpenMeeting, onTab }) {
       <div className="wk-two">
         <section className="wk-section"><h4>Lịch hôm nay & ngày mai</h4>
           {data.today.length ? data.today.map(e => (
-            <button key={e.eventId} type="button" className={`wk-list-item wk-ev k-${e.kind}`} onClick={() => (e.taskId ? onOpenTask(e.taskId) : e.meetingId && onOpenMeeting(e.meetingId))}>
+            <button key={e.eventId} type="button" className={`wk-list-item wk-ev k-${e.kind}`} onClick={() => (e.taskId ? onOpenTask(e.taskId) : e.meetingId ? onOpenMeeting(e.meetingId) : onOpenEvent(e.eventId))}>
               <span className="wk-when">{fmtRange(e.start, e.end)}</span><b>{e.title}</b>
             </button>
           )) : <p className="muted">Không có lịch.</p>}
@@ -163,6 +164,7 @@ export default function WorkPage({ user, conversations, onToast, target }) {
   const [tab, setTab] = useState('overview');
   const [taskId, setTaskId] = useState(null);
   const [meetingId, setMeetingId] = useState(null);
+  const [eventId, setEventId] = useState(null);
   const [createTask, setCreateTask] = useState(null);
   const [createMeeting, setCreateMeeting] = useState(null);
   const [calSource, setCalSource] = useState('me');
@@ -180,9 +182,7 @@ export default function WorkPage({ user, conversations, onToast, target }) {
   const openItem = ev => {
     if (ev.taskId) setTaskId(ev.taskId);
     else if (ev.meetingId) setMeetingId(ev.meetingId);
-    else if (ev.kind === 'PERSONAL' && ev.mine && window.confirm(`Hủy lịch cá nhân “${ev.title}”?`)) {
-      work.cancelEvent(ev.eventId).then(() => onToast('Đã hủy lịch.')).catch(err => onToast(err.message));
-    }
+    else if (ev.eventId && ev.visible !== false) setEventId(ev.eventId); // lich ca nhan: mo hop chi tiet
   };
   const createAt = (start, end) => setCreateTask({ start: start.toISOString(), end: end.toISOString(), conversationId: calSource !== 'me' ? calSource : '' });
 
@@ -202,7 +202,7 @@ export default function WorkPage({ user, conversations, onToast, target }) {
               <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'active' : ''} onClick={() => setTab(k)}><Icon size={15} /> {v}</button>
             ))}
           </div>
-          {tab === 'overview' && <Overview onOpenTask={setTaskId} onOpenMeeting={setMeetingId} onTab={setTab} />}
+          {tab === 'overview' && <Overview onOpenTask={setTaskId} onOpenMeeting={setMeetingId} onOpenEvent={setEventId} onTab={setTab} />}
           {tab === 'tasks' && <TaskList groups={groups} onOpen={setTaskId} onCreate={() => setCreateTask({})} />}
           {tab === 'calendar' && (
             <>
@@ -225,6 +225,7 @@ export default function WorkPage({ user, conversations, onToast, target }) {
       {taskId && <TaskDetail user={user} groups={groups} taskId={taskId} onToast={onToast} onClose={() => setTaskId(null)} />}
       {createMeeting && <MeetingForm user={user} groups={groups} initial={createMeeting} onToast={onToast} onClose={() => setCreateMeeting(null)}
         onSaved={m => { setCreateMeeting(null); setTab('meetings'); if (!m.joined) setMeetingId(m.status === 'SCHEDULED' ? m.meetingId : null); }} />}
+      {eventId && <EventDetail eventId={eventId} onToast={onToast} onClose={() => setEventId(null)} />}
       {meetingId && <MeetingDetail meetingId={meetingId} onToast={onToast} onClose={() => setMeetingId(null)} />}
     </section>
   );

@@ -30,6 +30,7 @@ const KIND = {
   MEETING_UPDATED: { icon: Video, text: n => `đã đổi lịch cuộc họp ${n.preview}` },
   MEETING_CANCELLED: { icon: CalendarX, text: n => `đã hủy cuộc họp ${n.preview}` },
   REMINDER: { icon: AlarmClock, text: n => `Nhắc nhở — ${n.preview}` },
+  COMMENT_REACTION: { icon: Heart, text: n => `đã bày tỏ cảm xúc ${({ LIKE: '👍', LOVE: '❤️', HAHA: '😂', WOW: '😮', SAD: '😢', ANGRY: '😡' })[n.preview] || ''} về bình luận của bạn` },
   STORY_REACTION: { icon: Heart, text: n => `đã bày tỏ cảm xúc ${({ LIKE: '👍', LOVE: '❤️', HAHA: '😆', WOW: '😮', SAD: '😢', ANGRY: '😡' })[n.preview] || ''} về tin của bạn` }
 };
 

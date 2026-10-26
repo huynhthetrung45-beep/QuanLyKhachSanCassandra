@@ -461,7 +461,38 @@ async function cancelPersonalEvent(user, eventId) {
     return { eventId: ev.event_id.toString(), status: 'CANCELLED' };
 }
 
+// Chi tiet 1 lich: nguoi tao, nguoi tham gia, nhom, quyen sua. Khong co quyen xem -> 404 (khong lo lich ton tai).
+async function getEventDetail(user, eventId) {
+    let id;
+    try { id = TimeUuid.fromString(String(eventId)); } catch { throw httpError(400, 'INVALID_ID', 'Mã lịch không hợp lệ.'); }
+    const ev = await readEvent(id);
+    if (!ev || !(await canViewEvent(user.userId, ev))) throw httpError(404, 'EVENT_NOT_FOUND', 'Không tìm thấy lịch.');
+    const members = membersOf(ev);
+    const profiles = await userService.getUsersByIds([ev.owner_id, ...members]);
+    const name = uid => profiles.get(uid)?.displayName || uid;
+    let groupName = null;
+    if (ev.conversation_id) {
+        const conv = (await db.execute('SELECT conversation_name FROM conversations WHERE conversation_id = ?', [ev.conversation_id])).first();
+        groupName = conv ? conv.conversation_name : null;
+    }
+    const own = ev.kind === 'PERSONAL' && ev.owner_id === user.userId && ev.status === 'ACTIVE';
+    return {
+        ...eventDto(ev, user.userId, true),
+        kindLabel: KIND_LABEL[ev.kind] || 'Lịch',
+        status: ev.status,
+        owner: { userId: ev.owner_id, displayName: name(ev.owner_id) },
+        participants: members.map(uid => ({ userId: uid, displayName: name(uid) })),
+        groupName,
+        durationMinutes: Math.round((new Date(ev.end_at) - new Date(ev.start_at)) / 60000),
+        createdAt: iso(ev.created_at),
+        updatedAt: iso(ev.updated_at),
+        canEdit: own,
+        canCancel: own
+    };
+}
+
 module.exports = {
+    getEventDetail,
     parseTime, validateRange, overlaps, dayKeys, acquireLocks, releaseLocks, withLocks, readEvent, busyEvents, findConflicts,
     suggestSlots, assertNoConflicts, createEvent, updateEvent, cancelEvent, eventDto, userCalendar, groupCalendar, availability,
     checkConflicts, createPersonalEvent, moveEvent, cancelPersonalEvent, requireGroupMember, canViewEvent, membersOf, KIND_LABEL

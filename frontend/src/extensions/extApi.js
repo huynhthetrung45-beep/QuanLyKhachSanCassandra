@@ -157,7 +157,12 @@ export const ext = {
   unlockUser: userId => request('POST', `/admin/users/${enc(userId)}/unlock`),
   setUserRole: (userId, role) => request('POST', `/admin/users/${enc(userId)}/role`, { role }),
   moderationLog: () => request('GET', '/admin/moderation-log'),
-  runReminders: () => request('POST', '/admin/reminders/run')
+  runReminders: () => request('POST', '/admin/reminders/run'),
+
+  // cam xuc binh luan bai viet
+  reactComment: (postId, commentId, reaction) => request('PUT', `/posts/${postId}/comments/${commentId}/reaction`, { reaction }),
+  unreactComment: (postId, commentId) => request('DELETE', `/posts/${postId}/comments/${commentId}/reaction`),
+  commentReactors: (postId, commentId) => request('GET', `/posts/${postId}/comments/${commentId}/reactions`)
 };
 
 export const REPORT_REASONS = [

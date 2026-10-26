@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CornerDownRight, LoaderCircle, RotateCcw } from 'lucide-react';
 import Avatar from './Avatar';
 import { ReportCommentButton } from '../extensions/SocialExtras';
+import CommentReactions from '../extensions/CommentReactions';
 import ConfirmDialog from './ConfirmDialog';
 import { api } from '../api';
 import { formatFull, formatListTime } from '../utils';
@@ -86,6 +87,7 @@ function CommentItem({ c, isReply, rootId, onReply, onEdited, onAskDelete, onOpe
         )}
         <div className="comment-meta">
           <time dateTime={c.createdAt} title={formatFull(c.createdAt)}>{formatListTime(c.createdAt)}</time>
+          <CommentReactions postId={postId} comment={c} onToast={onToast} />
           {c.edited && <span>· đã sửa</span>}
           <button type="button" className="link-btn" onClick={() => onReply(c)}>Trả lời</button>
           {c.canEdit && !editing && <button type="button" className="link-btn" onClick={() => { setDraft(c.content); setEditing(true); }}>Sửa</button>}

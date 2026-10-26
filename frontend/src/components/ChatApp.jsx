@@ -203,6 +203,7 @@ export default function ChatApp({ user, onLogout, onUserChanged }) {
   }
 
   function openNotification(n) {
+    if (n.type === 'COMMENT_REACTION' && n.postId) return setPostModal({ postId: n.postId, openComments: true });
     if (n.ref && ['TASK', 'MEETING', 'EVENT'].includes(n.ref.type)) return window.dispatchEvent(new CustomEvent('chatott:navigate', { detail: { view: 'work', ref: n.ref } }));
     if (['POST_REACTION', 'POST_COMMENT', 'COMMENT_REPLY', 'POST_SHARE'].includes(n.type) && n.postId) {
       setPostModal({ postId: n.postId, openComments: n.type === 'POST_COMMENT' || n.type === 'COMMENT_REPLY' });

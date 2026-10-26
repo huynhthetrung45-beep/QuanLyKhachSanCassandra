@@ -63,6 +63,8 @@ export const work = {
   createEvent: payload => request('POST', '/calendar/events', { body: payload }),
   moveEvent: (id, start, end) => request('PATCH', `/calendar/events/${enc(id)}`, { body: { start, end } }),
   cancelEvent: id => request('DELETE', `/calendar/events/${enc(id)}`),
+  event: id => request('GET', `/calendar/events/${enc(id)}`),
+  updateEvent: (id, payload) => request('PATCH', `/calendar/events/${enc(id)}`, { body: payload }),
 
   reminders: status => request('GET', '/reminders', { query: { status } }),
   createReminder: payload => request('POST', '/reminders', { body: payload }),

@@ -16,7 +16,7 @@ const notificationService = require('../services/notification.service');
 
 const EXTRA_TYPES = ['MENTION', 'TASK_DUE', 'GROUP_JOIN_REQUEST', 'REPORT_UPDATE', 'FRIEND_POST', 'FRIEND_STORY', 'STORY_REACTION',
     // Cong viec & Lich, Hop truc tuyen
-    'TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_STATUS', 'TASK_COMMENT', 'MEETING_INVITE', 'MEETING_UPDATED', 'MEETING_CANCELLED', 'REMINDER'];
+    'TASK_ASSIGNED', 'TASK_UPDATED', 'TASK_STATUS', 'TASK_COMMENT', 'MEETING_INVITE', 'MEETING_UPDATED', 'MEETING_CANCELLED', 'REMINDER', 'COMMENT_REACTION'];
 const ALL_TYPES = () => notificationService.TYPES.slice();
 
 const TYPE_TEXT = {
@@ -41,7 +41,8 @@ const TYPE_TEXT = {
     MEETING_INVITE: 'mời bạn tham gia cuộc họp',
     MEETING_UPDATED: 'đã đổi lịch cuộc họp',
     MEETING_CANCELLED: 'đã hủy cuộc họp',
-    REMINDER: 'Nhắc nhở'
+    REMINDER: 'Nhắc nhở',
+    COMMENT_REACTION: 'đã bày tỏ cảm xúc về bình luận của bạn'
 };
 
 // ===== PT-25 =====

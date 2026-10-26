@@ -15,7 +15,7 @@
     "seed:accounts": "node backend/scripts/seed-demo-accounts.js",
     "bench": "node backend/scripts/bench.js",
     "attachments:cleanup": "node backend/scripts/cleanup-attachments.js",
-    "test": "node --test backend/tests/api.test.js backend/tests/features.test.js backend/tests/cleanup.test.js backend/tests/social.test.js backend/tests/posts.test.js backend/tests/insights.test.js backend/tests/comments.test.js backend/tests/chatsearch.test.js backend/tests/pins.test.js backend/tests/bench.test.js backend/tests/migrate.test.js backend/tests/verify-cql.test.js backend/tests/deploy.test.js backend/tests/init-db.test.js backend/tests/extensions.test.js backend/tests/work.test.js backend/tests/storage-redis.test.js",
+    "test": "node --test backend/tests/api.test.js backend/tests/features.test.js backend/tests/cleanup.test.js backend/tests/social.test.js backend/tests/posts.test.js backend/tests/insights.test.js backend/tests/comments.test.js backend/tests/chatsearch.test.js backend/tests/pins.test.js backend/tests/bench.test.js backend/tests/migrate.test.js backend/tests/verify-cql.test.js backend/tests/deploy.test.js backend/tests/init-db.test.js backend/tests/extensions.test.js backend/tests/work.test.js backend/tests/storage-redis.test.js backend/tests/comment-reactions.test.js",
     "deploy:migration": "node backend/scripts/deploy-migration.js",
     "test:integration": "node --test --test-concurrency=1 backend/tests/integration.test.js",
     "bench:api": "node backend/scripts/bench-api.js",

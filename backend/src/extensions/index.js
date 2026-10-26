@@ -36,7 +36,9 @@ const REQUIRED_TABLES = [
     // migration 014-015: cong viec, lich, nhac nho, hop truc tuyen
     'tasks', 'tasks_by_user', 'tasks_by_group', 'task_comments_by_task', 'task_history_by_task', 'calendar_events', 'events_by_user_day',
     'events_by_group_day', 'schedule_locks', 'idempotency_keys', 'reminders', 'reminders_by_user', 'reminders_by_target', 'reminders_due',
-    'notification_refs', 'meetings', 'meetings_by_user', 'meetings_by_group', 'meeting_invitations', 'meeting_links', 'meeting_participation'
+    'notification_refs', 'meetings', 'meetings_by_user', 'meetings_by_group', 'meeting_invitations', 'meeting_links', 'meeting_participation',
+    // migration 016: cam xuc binh luan
+    'comment_reactions'
 ];
 
 function installHooks() {
@@ -155,6 +157,9 @@ function mountAuthed(app) {
 
     // Thong bao: gan doi tuong lien quan (cong viec / cuoc hop) de mo dung man hinh.
     app.get('/api/v1/notifications', decorateJson(notifyx.decorateNotifications));
+    // Binh luan bai viet: gan tong hop cam xuc cho tung binh luan.
+    app.get(['/api/v1/posts/:postId/comments', '/api/v1/posts/:postId/comments/:commentId/replies'],
+        decorateJson(require('./comment-reactions.service').decorateComments));
 
     app.use('/api/v1', routes);
     app.use('/api/v1', workRoutes);

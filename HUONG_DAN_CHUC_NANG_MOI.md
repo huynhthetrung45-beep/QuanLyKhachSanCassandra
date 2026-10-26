@@ -5,7 +5,7 @@ Tài liệu này mô tả phần **bổ sung** theo mục 4.2 và 5.2 của SRS.
 ## 1. Nguyên tắc: chỉ thêm, không sửa chức năng cũ
 
 - Toàn bộ backend mới nằm trong `backend/src/extensions/`. Toàn bộ frontend mới nằm trong `frontend/src/extensions/`.
-- Cơ sở dữ liệu: **7 migration mới 009–015, chỉ tạo 56 bảng mới** (009–012: 32 bảng, 013: 3 bảng, 014–015: 21 bảng). Không có `ALTER` nào trên bảng cũ, không ghi dữ liệu cũ.
+- Cơ sở dữ liệu: **8 migration mới 009–016, chỉ tạo 57 bảng mới** (009–012: 32 bảng, 013: 3 bảng, 014–015: 21 bảng, 016: 1 bảng). Không có `ALTER` nào trên bảng cũ, không ghi dữ liệu cũ.
   Thông tin thêm của tin nhắn (đã sửa, bình chọn, sticker, nhắc tên, link) nằm ở bảng riêng `message_meta_by_conversation`.
 - Route và service cũ **không bị sửa**. Chức năng mới gắn vào bằng 3 cơ chế:
   1. Route mới (`/api/v1/...`) trong `extensions/routes.js`.
@@ -37,14 +37,14 @@ Tài liệu này mô tả phần **bổ sung** theo mục 4.2 và 5.2 của SRS.
 ```bat
 npm install
 cd frontend && npm install && cd ..
-npm run deploy:migration            REM gõ MIGRATE để xác nhận (dùng db/verify-015-before/after.cql, gồm migration 009–015)
+npm run deploy:migration            REM gõ MIGRATE để xác nhận (dùng db/verify-016-before/after.cql, gồm migration 009–016)
 npm run hashtags:backfill -- --apply REM (tuỳ chọn) lập chỉ mục hashtag cho bài viết cũ
 npm run admin:grant -- an@chatott.demo
 npm run dev                          REM backend
 cd frontend && npm run dev           REM frontend
 ```
 
-Backend từ chối khởi động nếu chưa chạy migration 009–015 (giống các bảng cũ).
+Backend từ chối khởi động nếu chưa chạy migration 009–016 (giống các bảng cũ).
 Cấu hình mới: xem cuối `backend/.env.example`.
 
 ## 3. Bảng chức năng
@@ -105,6 +105,12 @@ Khi chưa có `ANTHROPIC_API_KEY`, chức năng gợi ý trả lời và dịch 
 | Họp trực tuyến WebRTC: lên lịch / họp ngay, lời mời, link mời, âm thanh, hình, chia sẻ màn hình, chat, kết thúc | `/meetings`, `/meetings/:id/join|signal|chat|end` | › Cuộc họp; phòng họp toàn màn hình |
 | Thông báo công việc / cuộc họp / nhắc nhở mở đúng màn hình | `ref` trong `GET /notifications` | Mục Thông báo |
 
+### Bổ sung: cảm xúc cho bình luận bài viết (migration 016: comment_reactions)
+
+| Chức năng | API chính | Giao diện |
+|---|---|---|
+| Thả 6 cảm xúc (👍 ❤️ 😂 😮 😢 😡) cho từng bình luận / phản hồi, đổi hoặc gỡ; xem ai đã thả theo từng loại; người viết bình luận nhận thông báo `COMMENT_REACTION` (1 lần / người) | `PUT/DELETE /posts/:pid/comments/:cid/reaction`, `GET /posts/:pid/comments/:cid/reactions`; tổng hợp gắn vào `GET /posts/:pid/comments` và `/replies` | Dưới mỗi bình luận: bấm “Thích”, rê chuột (hoặc giữ lâu trên điện thoại) để chọn cảm xúc, bấm tổng số để xem danh sách |
+
 Biến môi trường mới: `MEETING_TOKEN_SECRET`, `STUN_URLS`, `TURN_URLS`, `TURN_SECRET`, `REMINDER_INTERVAL_SECONDS`… (cuối `backend/.env.example`).
 File cũ được chèn thêm dòng trong đợt này: `NavRail.jsx` (nút Công việc), `ChatApp.jsx` (2 dòng), `NotificationsPage.jsx` (8 loại thông báo),
 `package.json` (nối `work.test.js`), `tests/fakeCassandra.js` (kiểu `set<timeuuid>`), `schema.cql` (nối 21 bảng). Không dòng gốc nào bị thay thêm.
@@ -123,7 +129,7 @@ Phi chức năng:
 
 ## 4. Kiểm thử
 
-`npm test` chạy 17 bộ (thêm `extensions.test.js`, `work.test.js`, `storage-redis.test.js`) trên Cassandra giả lập – **275 test, tất cả đạt**.
+`npm test` chạy 18 bộ (thêm `extensions.test.js`, `work.test.js`, `storage-redis.test.js`, `comment-reactions.test.js`) trên Cassandra giả lập – **277 test, tất cả đạt**.
 S3 được kiểm bằng máy chủ S3 giả lập chạy thật, kiểm tra chữ ký từng request; chữ ký SigV4 khớp ví dụ chuẩn trong tài liệu AWS. Redis được kiểm bằng client giả lập (chưa chạy Redis/MinIO thật).
 WebRTC đã kiểm chứng bằng 2 trình duyệt Chrome thật (camera/micro giả lập): âm thanh và hình ảnh truyền hai chiều, chia sẻ màn hình, chat, kết thúc họp.
 Chưa kiểm thử trên Cassandra thật / Docker trong lần phát triển này.

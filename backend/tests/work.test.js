@@ -335,3 +335,39 @@ test('tổng quan công việc: việc được giao, sắp đến hạn, cuộc
         assert.ok(Array.isArray(r.body[k]), k);
     }
 });
+
+test('chi tiết lịch: chủ lịch xem và sửa được; người ngoài 404; thành viên nhóm xem lịch nhóm nhưng không sửa', async () => {
+    const ev = await A.post('/api/v1/calendar/events', { title: 'Chuẩn bị thuyết trình', start: at(6, 9), end: at(6, 10, 30) });
+    assert.equal(ev.status, 201, JSON.stringify(ev.body));
+    const id = ev.body.eventId;
+    const d = await A.get(`/api/v1/calendar/events/${id}`);
+    assert.equal(d.status, 200, JSON.stringify(d.body));
+    assert.equal(d.body.title, 'Chuẩn bị thuyết trình');
+    assert.equal(d.body.kindLabel, 'Lịch cá nhân');
+    assert.equal(d.body.durationMinutes, 90);
+    assert.equal(d.body.owner.displayName, 'Nguyễn An');
+    assert.equal(d.body.canEdit, true);
+    // Nguoi khac khong xem duoc lich ca nhan (khong lo ton tai).
+    assert.equal((await B.get(`/api/v1/calendar/events/${id}`)).status, 404);
+    assert.equal((await H.get('/api/v1/calendar/events/not-an-id')).status, 400);
+    // Sua tieu de + gio.
+    const up = await A.patch(`/api/v1/calendar/events/${id}`, { title: 'Tập thuyết trình', start: at(6, 14), end: at(6, 15) });
+    assert.equal(up.status, 200, JSON.stringify(up.body));
+    const d2 = await A.get(`/api/v1/calendar/events/${id}`);
+    assert.equal(d2.body.title, 'Tập thuyết trình');
+    assert.equal(d2.body.start, at(6, 14));
+    // Lich cong viec nhom: thanh vien nhom xem duoc chi tiet, khong sua duoc tai day.
+    const t = await A.post('/api/v1/tasks', { title: 'Viết chương 4', conversationId: GROUP_ID, assigneeIds: ['user02'], start: at(6, 16), end: at(6, 17) });
+    const sid = t.body.sessions[0].eventId;
+    const g = await C.get(`/api/v1/calendar/events/${sid}`);
+    assert.equal(g.status, 200, JSON.stringify(g.body));
+    assert.equal(g.body.kindLabel, 'Công việc');
+    assert.equal(g.body.canEdit, false);
+    assert.equal(g.body.groupName, 'Nhóm Đồ án NoSQL');
+    assert.equal((await H.get(`/api/v1/calendar/events/${sid}`)).status, 404);
+    // Huy lich ca nhan -> chi tiet bao trang thai da huy.
+    await A.del(`/api/v1/calendar/events/${id}`);
+    const d3 = await A.get(`/api/v1/calendar/events/${id}`);
+    assert.equal(d3.body.status, 'CANCELLED');
+    assert.equal(d3.body.canEdit, false);
+});
